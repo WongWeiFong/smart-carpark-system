@@ -13,6 +13,7 @@ import AddCar from './components/AddCar';
 import ParkingHistory from './components/ParkingHistory';
 import ParkingSlot from './components/ParkingSlot';
 import ParkingManagement from './components/ParkingManagement';
+import PaymentHistory from './components/PaymentHistory';
 import './App.css';
 
 // Protected Route component
@@ -70,6 +71,7 @@ function AppContent() {
         <Route path="/cars/:carId/history" element={<ProtectedRoute><ParkingHistory /></ProtectedRoute>} />
         <Route path="/cars/:carId/parking-slot" element={<ProtectedRoute><ParkingSlot /></ProtectedRoute>} />
         <Route path="/parking" element={<ProtectedRoute><ParkingManagement /></ProtectedRoute>} />
+        <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
       </Routes>
     </div>
   );

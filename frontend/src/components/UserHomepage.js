@@ -56,7 +56,7 @@ const UserHomepage = () => {
             <div className="card-icon">💳</div>
             <h3>Payment History</h3>
             <p>View your parking payment history and receipts</p>
-            <button className="card-button">View History</button>
+            <Link to="/payment-history" className="card-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>View History</Link>
           </div>
 
           <div className="dashboard-card">

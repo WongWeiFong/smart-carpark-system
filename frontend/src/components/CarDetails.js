@@ -265,6 +265,17 @@ const CarDetails = () => {
                     <span className="action-description">Set location on minimap</span>
                   </div>
                 </Link>
+                
+                {/* <Link 
+                  to="/payment-history" 
+                  className="quick-action-button payment-button"
+                >
+                  <span className="action-icon">💳</span>
+                  <div className="action-content">
+                    <span className="action-title">Payment History</span>
+                    <span className="action-description">View transactions & top-ups</span>
+                  </div>
+                </Link> */}
               </div>
             </div>
             

@@ -43,7 +43,28 @@ export const ParkingProvider = ({ children }) => {
   // Generate mock parking data for demonstration
   const generateMockParkingData = () => {
     const mockHistory = [];
+    const mockPaymentHistory = [];
     const currentDate = new Date();
+    
+    // Generate payment transactions first (topups and deductions)
+    for (let i = 0; i < 15; i++) {
+      const transactionDate = new Date(currentDate.getTime() - Math.random() * 45 * 24 * 60 * 60 * 1000);
+      
+      if (i % 3 === 0) {
+        // Add top-up transactions
+        const topupAmount = (Math.random() * 80 + 20); // $20-$100
+        mockPaymentHistory.push({
+          id: `payment_${i}`,
+          type: 'topup',
+          amount: topupAmount,
+          description: 'Account Top-up',
+          date: transactionDate.toISOString(),
+          status: 'completed',
+          reference: `TXN${Date.now()}${i}`,
+          paymentMethod: ['Credit Card', 'PayPal', 'Bank Transfer'][Math.floor(Math.random() * 3)]
+        });
+      }
+    }
     
     // Generate 10 random parking sessions
     for (let i = 0; i < 10; i++) {
@@ -63,17 +84,46 @@ export const ParkingProvider = ({ children }) => {
         parkingSlot: `A${Math.floor(Math.random() * 50) + 1}`,
         status: 'completed'
       });
+
+      // Add corresponding payment deduction for each parking session
+      mockPaymentHistory.push({
+        id: `deduction_${i}`,
+        type: 'deduction',
+        amount: -cost,
+        description: `Parking Fee - Slot ${mockHistory[i].parkingSlot}`,
+        date: exitTime.toISOString(),
+        status: 'completed',
+        reference: `PKG${Date.now()}${i}`,
+        paymentMethod: 'Account Balance',
+        relatedSession: `session_${i}`
+      });
     }
 
+    // Calculate balance from transactions
+    const totalTopups = mockPaymentHistory
+      .filter(t => t.type === 'topup')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const totalDeductions = mockPaymentHistory
+      .filter(t => t.type === 'deduction')
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+    const balance = totalTopups - totalDeductions;
+
     return {
-      balance: 45.75,
-      totalSpent: 127.50,
-      history: mockHistory.sort((a, b) => new Date(b.entryTime) - new Date(a.entryTime))
+      balance: Math.max(balance, 45.75), // Ensure minimum balance
+      totalSpent: totalDeductions,
+      history: mockHistory.sort((a, b) => new Date(b.entryTime) - new Date(a.entryTime)),
+      paymentHistory: mockPaymentHistory.sort((a, b) => new Date(b.date) - new Date(a.date))
     };
   };
 
   const getParkingHistory = (plateNumber) => {
     return parkingData.history || [];
+  };
+
+  const getPaymentHistory = () => {
+    return parkingData.paymentHistory || [];
   };
 
   const getBalance = () => {
@@ -84,12 +134,58 @@ export const ParkingProvider = ({ children }) => {
     setLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Create new payment transaction
+      const newTransaction = {
+        id: `payment_${Date.now()}`,
+        type: 'topup',
+        amount: amount,
+        description: 'Account Top-up',
+        date: new Date().toISOString(),
+        status: 'completed',
+        reference: `TXN${Date.now()}`,
+        paymentMethod: 'Credit Card'
+      };
+
       setParkingData(prev => ({
         ...prev,
-        balance: (prev.balance || 0) + amount
+        balance: (prev.balance || 0) + amount,
+        paymentHistory: [newTransaction, ...(prev.paymentHistory || [])]
       }));
     } catch (error) {
       console.error('Error adding balance:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addPaymentDeduction = async (amount, description, relatedSession = null) => {
+    setLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Create new deduction transaction
+      const newTransaction = {
+        id: `deduction_${Date.now()}`,
+        type: 'deduction',
+        amount: -amount,
+        description: description,
+        date: new Date().toISOString(),
+        status: 'completed',
+        reference: `PKG${Date.now()}`,
+        paymentMethod: 'Account Balance',
+        relatedSession: relatedSession
+      };
+
+      setParkingData(prev => ({
+        ...prev,
+        balance: Math.max((prev.balance || 0) - amount, 0), // Prevent negative balance
+        totalSpent: (prev.totalSpent || 0) + amount,
+        paymentHistory: [newTransaction, ...(prev.paymentHistory || [])]
+      }));
+    } catch (error) {
+      console.error('Error adding payment deduction:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -132,8 +228,10 @@ export const ParkingProvider = ({ children }) => {
     parkingData,
     loading,
     getParkingHistory,
+    getPaymentHistory,
     getBalance,
     addBalance,
+    addPaymentDeduction,
     updateParkingSlot,
     getParkingSlot,
     getCurrentParking

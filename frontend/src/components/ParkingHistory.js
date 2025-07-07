@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useCars } from '../contexts/CarContext';
-import { useParking } from '../contexts/ParkingContext';
-import './ParkingComponents.css';
+import React, { useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useCars } from "../contexts/CarContext";
+import { useParking } from "../contexts/ParkingContext";
+import "./ParkingComponents.css";
 
 const ParkingHistory = () => {
   const { carId } = useParams();
@@ -11,7 +11,7 @@ const ParkingHistory = () => {
   const { getCarById } = useCars();
   const { getParkingHistory, getBalance, addBalance, loading } = useParking();
   const [showAddBalance, setShowAddBalance] = useState(false);
-  const [balanceAmount, setBalanceAmount] = useState('');
+  const [balanceAmount, setBalanceAmount] = useState("");
 
   const car = getCarById(carId);
   const parkingHistory = getParkingHistory(car?.plateNumber);
@@ -22,7 +22,9 @@ const ParkingHistory = () => {
       <div className="parking-container">
         <div className="error-container">
           <h2>Car not found</h2>
-          <Link to="/cars" className="back-button">Back to Car List</Link>
+          <Link to="/cars" className="back-button">
+            Back to Car List
+          </Link>
         </div>
       </div>
     );
@@ -31,23 +33,23 @@ const ParkingHistory = () => {
   const handleAddBalance = async () => {
     const amount = parseFloat(balanceAmount);
     if (isNaN(amount) || amount <= 0) {
-      alert('Please enter a valid amount');
+      alert("Please enter a valid amount");
       return;
     }
-    
+
     try {
       await addBalance(amount);
-      setBalanceAmount('');
+      setBalanceAmount("");
       setShowAddBalance(false);
-      alert('Balance added successfully!');
+      alert("Balance added successfully!");
     } catch (error) {
-      alert('Failed to add balance. Please try again.');
+      alert("Failed to add balance. Please try again.");
     }
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
   };
 
   const formatDuration = (hours) => {
@@ -71,8 +73,12 @@ const ParkingHistory = () => {
             <h1 className="page-title">Parking History</h1>
           </div>
           <div className="user-info">
-            <span className="welcome-text">Welcome, {user?.name || user?.email}!</span>
-            <button onClick={handleLogout} className="logout-btn">Logout</button>
+            <span className="welcome-text">
+              Welcome, {user?.name || user?.email}!
+            </span>
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
           </div>
         </div>
       </header>
@@ -84,7 +90,9 @@ const ParkingHistory = () => {
             <div className="car-info-card">
               <div className="car-icon">🚗</div>
               <div className="car-info-details">
-                <h3>{car.make} {car.model}</h3>
+                <h3>
+                  {car.make} {car.model}
+                </h3>
                 <p className="plate-number">{car.plateNumber}</p>
               </div>
             </div>
@@ -95,19 +103,21 @@ const ParkingHistory = () => {
             <div className="balance-card">
               <div className="balance-info">
                 <div className="balance-amount">
-                  <span className="balance-label">Account Balance</span>
+                  <span className="balance-label">
+                    Balance Spent on this Car
+                  </span>
                   <span className="balance-value">${balance.toFixed(2)}</span>
                 </div>
-                <div className="balance-actions">
+                {/* <div className="balance-actions">
                   <button 
                     onClick={() => setShowAddBalance(!showAddBalance)}
                     className="add-balance-btn"
                   >
                     Add Balance
                   </button>
-                </div>
+                </div> */}
               </div>
-              
+
               {showAddBalance && (
                 <div className="add-balance-form">
                   <div className="form-group">
@@ -121,14 +131,14 @@ const ParkingHistory = () => {
                       step="0.01"
                     />
                     <div className="balance-form-actions">
-                      <button 
+                      <button
                         onClick={handleAddBalance}
                         disabled={loading}
                         className="confirm-balance-btn"
                       >
-                        {loading ? 'Adding...' : 'Add'}
+                        {loading ? "Adding..." : "Add"}
                       </button>
-                      <button 
+                      <button
                         onClick={() => setShowAddBalance(false)}
                         className="cancel-balance-btn"
                       >
@@ -144,12 +154,15 @@ const ParkingHistory = () => {
           {/* History Section */}
           <div className="history-section">
             <h3 className="section-title">Parking Sessions</h3>
-            
+
             {parkingHistory.length === 0 ? (
               <div className="empty-history">
                 <div className="empty-icon">🅿️</div>
                 <h4>No parking history yet</h4>
-                <p>Your parking sessions will appear here once you start using the carpark.</p>
+                <p>
+                  Your parking sessions will appear here once you start using
+                  the carpark.
+                </p>
               </div>
             ) : (
               <div className="history-list">
@@ -160,10 +173,12 @@ const ParkingHistory = () => {
                         {new Date(session.entryTime).toLocaleDateString()}
                       </div>
                       <div className={`session-status ${session.status}`}>
-                        {session.status === 'completed' ? 'Completed' : 'Active'}
+                        {session.status === "completed"
+                          ? "Completed"
+                          : "Active"}
                       </div>
                     </div>
-                    
+
                     <div className="history-details">
                       <div className="history-row">
                         <div className="history-field">
@@ -174,23 +189,29 @@ const ParkingHistory = () => {
                         </div>
                         <div className="history-field">
                           <span className="field-label">Entry Gate</span>
-                          <span className="field-value">{session.entryGate}</span>
+                          <span className="field-value">
+                            {session.entryGate}
+                          </span>
                         </div>
                       </div>
-                      
+
                       <div className="history-row">
                         <div className="history-field">
                           <span className="field-label">Exit</span>
                           <span className="field-value">
-                            {session.exitTime ? formatDate(session.exitTime) : 'Still parked'}
+                            {session.exitTime
+                              ? formatDate(session.exitTime)
+                              : "Still parked"}
                           </span>
                         </div>
                         <div className="history-field">
                           <span className="field-label">Exit Gate</span>
-                          <span className="field-value">{session.exitGate || 'N/A'}</span>
+                          <span className="field-value">
+                            {session.exitGate || "N/A"}
+                          </span>
                         </div>
                       </div>
-                      
+
                       <div className="history-row">
                         <div className="history-field">
                           <span className="field-label">Duration</span>
@@ -200,10 +221,12 @@ const ParkingHistory = () => {
                         </div>
                         <div className="history-field">
                           <span className="field-label">Parking Slot</span>
-                          <span className="field-value">{session.parkingSlot}</span>
+                          <span className="field-value">
+                            {session.parkingSlot}
+                          </span>
                         </div>
                       </div>
-                      
+
                       <div className="history-row">
                         <div className="history-field cost-field">
                           <span className="field-label">Cost</span>
@@ -224,4 +247,4 @@ const ParkingHistory = () => {
   );
 };
 
-export default ParkingHistory; 
+export default ParkingHistory;
