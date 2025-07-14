@@ -224,6 +224,175 @@ export const ParkingProvider = ({ children }) => {
     return currentSession || null;
   };
 
+  // Generate mock staff revenue data for demonstration
+  const generateStaffRevenueData = () => {
+    const allTransactions = [];
+    const users = [
+      { email: 'john.doe@email.com', name: 'John Doe' },
+      { email: 'jane.smith@email.com', name: 'Jane Smith' },
+      { email: 'mike.johnson@email.com', name: 'Mike Johnson' },
+      { email: 'sarah.wilson@email.com', name: 'Sarah Wilson' },
+      { email: 'david.brown@email.com', name: 'David Brown' },
+      { email: 'lisa.davis@email.com', name: 'Lisa Davis' },
+      { email: 'tom.miller@email.com', name: 'Tom Miller' },
+      { email: 'emma.taylor@email.com', name: 'Emma Taylor' }
+    ];
+
+    const currentDate = new Date();
+    
+    // Generate transactions for each user
+    users.forEach((userData, userIndex) => {
+      // Generate 8-15 transactions per user
+      const transactionCount = Math.floor(Math.random() * 8) + 8;
+      
+      for (let i = 0; i < transactionCount; i++) {
+        const transactionDate = new Date(currentDate.getTime() - Math.random() * 60 * 24 * 60 * 60 * 1000);
+        
+        if (i % 4 === 0 || i % 4 === 1) {
+          // Add top-up transactions (more frequent)
+          const topupAmount = Math.floor((Math.random() * 80 + 20) * 100) / 100; // $20-$100
+          allTransactions.push({
+            id: `staff_payment_${userIndex}_${i}`,
+            userId: userData.email,
+            userName: userData.name,
+            userEmail: userData.email,
+            type: 'topup',
+            amount: topupAmount,
+            description: 'Account Top-up',
+            date: transactionDate.toISOString(),
+            status: 'completed',
+            reference: `TXN${Date.now()}${userIndex}${i}`,
+            paymentMethod: ['Credit Card', 'PayPal', 'Bank Transfer', 'Cash'][Math.floor(Math.random() * 4)],
+            staffNotes: ''
+          });
+        } else {
+          // Add parking fee deductions
+          const duration = Math.floor(Math.random() * 8) + 1;
+          const cost = Math.floor(duration * 2.5 * 100) / 100;
+          const parkingSlot = `${['A', 'B', 'C'][Math.floor(Math.random() * 3)]}${Math.floor(Math.random() * 50) + 1}`;
+          
+          allTransactions.push({
+            id: `staff_deduction_${userIndex}_${i}`,
+            userId: userData.email,
+            userName: userData.name,
+            userEmail: userData.email,
+            type: 'deduction',
+            amount: -cost,
+            description: `Parking Fee - Slot ${parkingSlot}`,
+            date: transactionDate.toISOString(),
+            status: 'completed',
+            reference: `PKG${Date.now()}${userIndex}${i}`,
+            paymentMethod: 'Account Balance',
+            relatedSession: `session_${userIndex}_${i}`,
+            parkingSlot: parkingSlot,
+            duration: duration,
+            staffNotes: ''
+          });
+        }
+      }
+    });
+
+    return allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+  };
+
+  const getAllTransactions = () => {
+    if (!user) return [];
+    
+    // For staff, generate and return all transactions from all users
+    if (user.role === 'staff') {
+      const staffData = localStorage.getItem('staff_revenue_data');
+      if (staffData) {
+        return JSON.parse(staffData);
+      } else {
+        const allTransactions = generateStaffRevenueData();
+        localStorage.setItem('staff_revenue_data', JSON.stringify(allTransactions));
+        return allTransactions;
+      }
+    }
+    
+    // For regular users, return only their own transactions
+    return parkingData.paymentHistory || [];
+  };
+
+  const updateTransaction = async (transactionId, updates) => {
+    if (!user || user.role !== 'staff') {
+      throw new Error('Unauthorized: Only staff can update transactions');
+    }
+
+    setLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const allTransactions = getAllTransactions();
+      const updatedTransactions = allTransactions.map(transaction => 
+        transaction.id === transactionId 
+          ? { ...transaction, ...updates, lastModified: new Date().toISOString() }
+          : transaction
+      );
+      
+      localStorage.setItem('staff_revenue_data', JSON.stringify(updatedTransactions));
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteTransaction = async (transactionId) => {
+    if (!user || user.role !== 'staff') {
+      throw new Error('Unauthorized: Only staff can delete transactions');
+    }
+
+    setLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const allTransactions = getAllTransactions();
+      const filteredTransactions = allTransactions.filter(transaction => 
+        transaction.id !== transactionId
+      );
+      
+      localStorage.setItem('staff_revenue_data', JSON.stringify(filteredTransactions));
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getRevenueStats = () => {
+    if (!user || user.role !== 'staff') {
+      return {
+        totalRevenue: 0,
+        totalTransactions: 0,
+        topupAmount: 0,
+        parkingRevenue: 0,
+        uniqueUsers: 0
+      };
+    }
+
+    const allTransactions = getAllTransactions();
+    const totalRevenue = allTransactions
+      .filter(t => t.type === 'topup')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const parkingRevenue = allTransactions
+      .filter(t => t.type === 'deduction')
+      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+    const uniqueUsers = new Set(allTransactions.map(t => t.userId)).size;
+
+    return {
+      totalRevenue: totalRevenue,
+      totalTransactions: allTransactions.length,
+      topupAmount: totalRevenue,
+      parkingRevenue: parkingRevenue,
+      uniqueUsers: uniqueUsers
+    };
+  };
+
   const value = {
     parkingData,
     loading,
@@ -234,7 +403,11 @@ export const ParkingProvider = ({ children }) => {
     addPaymentDeduction,
     updateParkingSlot,
     getParkingSlot,
-    getCurrentParking
+    getCurrentParking,
+    getAllTransactions,
+    updateTransaction,
+    deleteTransaction,
+    getRevenueStats
   };
 
   return (

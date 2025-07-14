@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Homepage.css';
 
@@ -53,35 +54,35 @@ const StaffHomepage = () => {
             <div className="card-icon">👥</div>
             <h3>Customer Management</h3>
             <p>View and manage customer accounts and bookings</p>
-            <button className="card-button staff-button">View Customers</button>
+            <Link to="/customer-management" className="card-button staff-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>View Customers</Link>
           </div>
 
           <div className="dashboard-card staff-card">
             <div className="card-icon">📊</div>
             <h3>Analytics & Reports</h3>
             <p>View parking statistics and generate reports</p>
-            <button className="card-button staff-button">View Reports</button>
+            <Link to="/analytics-reports" className="card-button staff-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>View Reports</Link>
           </div>
 
           <div className="dashboard-card staff-card">
             <div className="card-icon">💰</div>
             <h3>Revenue Management</h3>
             <p>Track payments and revenue statistics</p>
-            <button className="card-button staff-button">View Revenue</button>
+            <Link to="/revenue-management" className="card-button staff-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>View Revenue</Link>
           </div>
 
           <div className="dashboard-card staff-card">
             <div className="card-icon">🔧</div>
             <h3>System Settings</h3>
             <p>Configure parking rates and system settings</p>
-            <button className="card-button staff-button">Settings</button>
+            <Link to="/system-settings" className="card-button staff-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>Settings</Link>
           </div>
 
           <div className="dashboard-card staff-card">
             <div className="card-icon">🚨</div>
             <h3>Emergency Management</h3>
             <p>Handle emergency situations and incidents</p>
-            <button className="card-button staff-button">Emergency</button>
+            <Link to="/emergency-management" className="card-button staff-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>Emergency</Link>
           </div>
         </div>
       </main>

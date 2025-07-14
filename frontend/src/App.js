@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CarProvider } from './contexts/CarContext';
 import { ParkingProvider } from './contexts/ParkingContext';
+import { CustomerProvider } from './contexts/CustomerContext';
 import Login from './components/Login';
 import Register from './components/Register';
 import StaffLogin from './components/StaffLogin';
@@ -14,6 +15,11 @@ import ParkingHistory from './components/ParkingHistory';
 import ParkingSlot from './components/ParkingSlot';
 import ParkingManagement from './components/ParkingManagement';
 import PaymentHistory from './components/PaymentHistory';
+import RevenueManagement from './components/RevenueManagement';
+import CustomerManagement from './components/CustomerManagement';
+import AnalyticsReports from './components/AnalyticsReports';
+import SystemSettings from './components/SystemSettings';
+import EmergencyManagement from './components/EmergencyManagement';
 import './App.css';
 
 // Protected Route component
@@ -72,6 +78,11 @@ function AppContent() {
         <Route path="/cars/:carId/parking-slot" element={<ProtectedRoute><ParkingSlot /></ProtectedRoute>} />
         <Route path="/parking" element={<ProtectedRoute><ParkingManagement /></ProtectedRoute>} />
         <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
+        <Route path="/revenue-management" element={<ProtectedRoute><RevenueManagement /></ProtectedRoute>} />
+        <Route path="/customer-management" element={<ProtectedRoute><CustomerManagement /></ProtectedRoute>} />
+        <Route path="/analytics-reports" element={<ProtectedRoute><AnalyticsReports /></ProtectedRoute>} />
+        <Route path="/system-settings" element={<ProtectedRoute><SystemSettings /></ProtectedRoute>} />
+        <Route path="/emergency-management" element={<ProtectedRoute><EmergencyManagement /></ProtectedRoute>} />
       </Routes>
     </div>
   );
@@ -82,9 +93,11 @@ function App() {
     <AuthProvider>
       <CarProvider>
         <ParkingProvider>
-          <Router>
-            <AppContent />
-          </Router>
+          <CustomerProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </CustomerProvider>
         </ParkingProvider>
       </CarProvider>
     </AuthProvider>
