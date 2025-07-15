@@ -13,7 +13,7 @@
 }
 
 .staff-header {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  background: linear-gradient(135deg, #ff9500 0%, #ff6b00 100%);
 }
 
 .header-content {
@@ -92,7 +92,7 @@
 .stat-number {
   font-size: 36px;
   font-weight: 700;
-  color: #ff6b6b;
+  color: #ff9500;
   margin-bottom: 10px;
 }
 
@@ -126,7 +126,7 @@
 }
 
 .staff-card {
-  border-left-color: #ff6b6b;
+  border-left-color: #ff9500;
 }
 
 .card-icon {
@@ -168,16 +168,16 @@
 }
 
 .staff-button {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  background: linear-gradient(135deg, #ff9500 0%, #ff6b00 100%);
 }
 
 .staff-button:hover {
-  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+  box-shadow: 0 8px 20px rgba(255, 149, 0, 0.3);
 }
 
 /* Staff Homepage Specific Styles */
 .staff-homepage .dashboard-card {
-  border-left-color: #ff6b6b;
+  border-left-color: #ff9500;
 }
 
 .staff-homepage .card-icon {

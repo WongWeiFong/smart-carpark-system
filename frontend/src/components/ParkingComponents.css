@@ -1332,7 +1332,7 @@
 }
 
 .revenue-header {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  background: linear-gradient(135deg, #ff9500 0%, #ff6b00 100%);
   color: white;
   padding: 20px 0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -1384,7 +1384,7 @@
 .stat-number {
   font-size: 28px;
   font-weight: 700;
-  color: #ff6b6b;
+  color: #ff9500;
 }
 
 .stat-label {
@@ -1445,7 +1445,7 @@
 
 .filter-input:focus, .filter-select:focus {
   outline: none;
-  border-color: #ff6b6b;
+  border-color: #ff9500;
 }
 
 .filter-actions {
@@ -1737,7 +1737,7 @@
 
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   outline: none;
-  border-color: #ff6b6b;
+  border-color: #ff9500;
 }
 
 .form-textarea {
@@ -1770,7 +1770,7 @@
 }
 
 .save-btn {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  background: linear-gradient(135deg, #ff9500 0%, #ff6b00 100%);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -1969,7 +1969,7 @@
 }
 
 .system-settings-header {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  background: linear-gradient(135deg, #ff9500 0%, #ff6b00 100%);
   color: white;
   padding: 20px 0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -2010,9 +2010,9 @@
 }
 
 .tab-button.active {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  background: linear-gradient(135deg, #ff9500 0%, #ff6b00 100%);
   color: white;
-  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3);
 }
 
 /* Machine Management Styles */
@@ -2049,7 +2049,7 @@
   background: #f8f9fa;
   border-radius: 12px;
   padding: 20px;
-  border-left: 5px solid #ff6b6b;
+  border-left: 5px solid #ff9500;
   transition: all 0.3s ease;
 }
 
@@ -2129,6 +2129,74 @@
   cursor: pointer;
 }
 
+/* Barrier Control Styles */
+.barrier-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.barrier-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.barrier-icon {
+  font-size: 18px;
+}
+
+.barrier-text {
+  font-weight: 600;
+  color: #495057;
+}
+
+.barrier-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.barrier-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.barrier-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.raise-barrier {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+}
+
+.raise-barrier:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+}
+
+.lower-barrier {
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+  color: white;
+}
+
+.lower-barrier:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+}
+
 .toggle-label input[type="checkbox"] {
   width: 20px;
   height: 20px;
@@ -2189,7 +2257,7 @@
 .filter-group input:focus,
 .filter-group select:focus {
   outline: none;
-  border-color: #ff6b6b;
+  border-color: #ff9500;
 }
 
 .clear-filters-btn {
@@ -2225,7 +2293,7 @@
   display: block;
   font-size: 24px;
   font-weight: 700;
-  color: #ff6b6b;
+  color: #ff9500;
   margin-bottom: 5px;
 }
 
@@ -2249,7 +2317,7 @@
 }
 
 .logs-table th {
-  background: #ff6b6b;
+  background: #ff9500;
   color: white;
   padding: 15px 10px;
   text-align: left;
@@ -2424,8 +2492,8 @@
 }
 
 .rate-card.selected {
-  border-color: #ff6b6b;
-  background: #fff5f5;
+  border-color: #ff9500;
+  background: #fff8f0;
 }
 
 .rate-card-header {
@@ -2458,7 +2526,7 @@
 
 .rate-value {
   font-weight: 700;
-  color: #ff6b6b;
+  color: #ff9500;
   font-size: 16px;
 }
 
@@ -2483,7 +2551,7 @@
 
 .rate-input-group input:focus {
   outline: none;
-  border-color: #ff6b6b;
+  border-color: #ff9500;
 }
 
 /* Responsive Design */

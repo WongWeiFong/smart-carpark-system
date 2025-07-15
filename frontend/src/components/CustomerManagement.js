@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCustomer } from '../contexts/CustomerContext';
 import './CustomerManagement.css';
 
 const CustomerManagement = () => {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { getAllCustomers, searchCustomers, loading } = useCustomer();
   const [customers, setCustomers] = useState([]);
@@ -115,7 +117,12 @@ const CustomerManagement = () => {
     <div className="customer-management">
       <header className="customer-header">
         <div className="header-content">
-          <h1 className="page-title">Customer Management</h1>
+          <div className="header-left">
+            <button onClick={() => navigate('/home')} className="back-button">
+              ← Back to Dashboard
+            </button>
+            <h1 className="page-title">Customer Management</h1>
+          </div>
           <div className="user-info">
             <span className="welcome-text">Staff: {user?.staffId || user?.email}</span>
             <button onClick={logout} className="logout-btn">Logout</button>

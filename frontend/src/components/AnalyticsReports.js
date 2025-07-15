@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useParking } from '../contexts/ParkingContext';
+import './ParkingComponents.css';
 import './AnalyticsReports.css';
 
 const AnalyticsReports = () => {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { getAllTransactions } = useParking();
   const [transactions, setTransactions] = useState([]);
@@ -399,7 +402,12 @@ const AnalyticsReports = () => {
     <div className="analytics-reports">
       <header className="analytics-header">
         <div className="header-content">
-          <h1 className="page-title">📊 Analytics & Reports</h1>
+          <div className="header-left">
+            <button onClick={() => navigate('/home')} className="back-button">
+              ← Back to Dashboard
+            </button>
+            <h1 className="page-title">📊 Analytics & Reports</h1>
+          </div>
           <div className="user-info">
             <span className="welcome-text">Staff: {user?.staffId || user?.email}</span>
             <button onClick={logout} className="logout-btn">Logout</button>

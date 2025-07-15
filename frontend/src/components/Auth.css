@@ -21,7 +21,7 @@
 }
 
 .auth-card.staff-card {
-  border-top: 4px solid #ff6b6b;
+  border-top: 4px solid #ff9500;
 }
 
 .auth-title {
@@ -46,7 +46,7 @@
 }
 
 .staff-card .auth-title::after {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  background: linear-gradient(135deg, #ff9500 0%, #ff6b00 100%);
 }
 
 .auth-form {
@@ -86,8 +86,8 @@
 }
 
 .staff-card .form-input:focus {
-  border-color: #ff6b6b;
-  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+  border-color: #ff9500;
+  box-shadow: 0 0 0 3px rgba(255, 149, 0, 0.1);
 }
 
 .auth-button {
@@ -119,11 +119,11 @@
 }
 
 .staff-button {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  background: linear-gradient(135deg, #ff9500 0%, #ff6b00 100%);
 }
 
 .staff-button:hover {
-  box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+  box-shadow: 0 10px 30px rgba(255, 149, 0, 0.3);
 }
 
 .auth-links {
@@ -150,11 +150,11 @@
 }
 
 .staff-card .auth-link {
-  color: #ff6b6b;
+  color: #ff9500;
 }
 
 .staff-card .auth-link:hover {
-  color: #ee5a24;
+  color: #ff6b00;
 }
 
 /* Responsive design */
