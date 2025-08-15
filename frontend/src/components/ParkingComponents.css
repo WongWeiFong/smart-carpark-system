@@ -3026,3 +3026,144 @@
     padding: 15px;
   }
 } 
+
+/* Enhanced Parking Layout Styles */
+.enhanced-layout-section {
+  margin-bottom: 30px;
+}
+
+.enhanced-layout-section h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.slot-info-display {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.hovered-slot-info,
+.selected-slot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+  min-width: 150px;
+}
+
+.hovered-slot-info strong,
+.selected-slot-info strong {
+  color: #333;
+  font-weight: 600;
+}
+
+.slot-status {
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.slot-status:contains("Available") {
+  background: #d4edda;
+  color: #155724;
+}
+
+.slot-status:contains("Occupied") {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.instructions-section {
+  margin-top: 30px;
+}
+
+.instructions-card {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-left: 5px solid #ffc107;
+}
+
+.instructions-card h4 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.instructions-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.instructions-card li {
+  padding: 8px 0;
+  color: #666;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.instructions-card li:before {
+  content: "•";
+  color: #ffc107;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Responsive Design for Enhanced Layout */
+@media (max-width: 768px) {
+  .slot-info-display {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .hovered-slot-info,
+  .selected-slot-info {
+    min-width: auto;
+  }
+  
+  .instructions-card {
+    padding: 20px;
+  }
+  
+  .instructions-card li {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .enhanced-layout-section h3 {
+    font-size: 20px;
+  }
+  
+  .instructions-card h4 {
+    font-size: 16px;
+  }
+  
+  .instructions-card li {
+    font-size: 13px;
+  }
+}

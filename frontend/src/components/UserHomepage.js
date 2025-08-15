@@ -72,6 +72,13 @@ const UserHomepage = () => {
             <p>Get help with parking issues or contact support</p>
             <button className="card-button">Get Help</button>
           </div>
+
+          <div className="dashboard-card demo-card">
+            <div className="card-icon">🎯</div>
+            <h3>Interactive Layout Demo</h3>
+            <p>Experience the new Konva.js parking layout with zoom, pan & click features</p>
+            <Link to="/parking-demo" className="card-button demo-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>Try Demo</Link>
+          </div>
         </div>
       </main>
     </div>

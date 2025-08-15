@@ -1,0 +1,347 @@
+/* ParkingLayoutCanvas.css */
+
+.parking-layout-canvas {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+/* Canvas Controls */
+.canvas-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.control-btn:active {
+  transform: translateY(0);
+}
+
+.zoom-level {
+  background: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 2px solid #dee2e6;
+  font-weight: 600;
+  color: #333;
+  min-width: 50px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.view-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.drag-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #333;
+  user-select: none;
+}
+
+.drag-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #667eea;
+  cursor: pointer;
+}
+
+/* Canvas Legend */
+.canvas-legend {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 2px solid #ddd;
+  flex-shrink: 0;
+}
+
+/* Canvas Container */
+.canvas-container {
+  border: 3px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8f9fa;
+  position: relative;
+  cursor: grab;
+}
+
+.canvas-container:active {
+  cursor: grabbing;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .parking-layout-canvas {
+    padding: 15px;
+  }
+  
+  .canvas-controls {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .zoom-controls {
+    justify-content: center;
+  }
+  
+  .view-controls {
+    justify-content: center;
+  }
+  
+  .canvas-legend {
+    justify-content: flex-start;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .parking-layout-canvas {
+    padding: 10px;
+  }
+  
+  .canvas-controls,
+  .canvas-legend {
+    padding: 10px;
+  }
+  
+  .canvas-legend {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .legend-item {
+    justify-content: center;
+  }
+  
+  .control-btn {
+    padding: 10px 14px;
+    font-size: 16px;
+  }
+  
+  .zoom-level {
+    padding: 8px 14px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .zoom-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .control-btn {
+    min-width: 45px;
+    padding: 12px;
+  }
+  
+  .zoom-level {
+    min-width: 60px;
+  }
+}
+
+/* Animation for smooth interactions */
+.parking-layout-canvas * {
+  transition: all 0.2s ease;
+}
+
+/* Focus styles for accessibility */
+.control-btn:focus,
+.drag-toggle:focus-within {
+  outline: 3px solid rgba(102, 126, 234, 0.3);
+  outline-offset: 2px;
+}
+
+/* Loading state */
+.canvas-container.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.canvas-container.loading::after {
+  content: "Loading...";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px 30px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #333;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Hover effects for better UX */
+.canvas-container:hover {
+  border-color: #667eea;
+}
+
+.legend-item:hover .legend-color {
+  transform: scale(1.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom scrollbar for legend if needed */
+.canvas-legend::-webkit-scrollbar {
+  height: 6px;
+}
+
+.canvas-legend::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.canvas-legend::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
+}
+
+.canvas-legend::-webkit-scrollbar-thumb:hover {
+  background: #5a67d8;
+}
+
+/* Error Boundary Styles */
+.konva-error-fallback {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+  text-align: center;
+}
+
+.error-container h3 {
+  color: #dc3545;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.error-container p {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.error-container ul {
+  text-align: left;
+  display: inline-block;
+  color: #666;
+  margin-bottom: 25px;
+}
+
+.error-container li {
+  margin-bottom: 8px;
+}
+
+.fallback-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 25px;
+}
+
+.retry-btn, .reload-btn, .fallback-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-btn:hover, .reload-btn:hover, .fallback-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.reload-btn {
+  background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+}
+
+.reload-btn:hover {
+  box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+}
+
+.fallback-option {
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.fallback-option p {
+  margin-bottom: 15px;
+  color: #666;
+}
+
+.fallback-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.fallback-btn:hover {
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+} 
