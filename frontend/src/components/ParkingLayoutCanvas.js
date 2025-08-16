@@ -143,12 +143,13 @@ const ParkingLayoutCanvas = ({
   const slotSpacing = 4;
 
   // Get slot status
-  const getSlotStatus = (slotNumber) => {
-    if (currentSlot === slotNumber) return "current";
-    if (selectedSlot === slotNumber) return "selected";
-    if (showBulkActions && selectedSlots.has(slotNumber))
+  const getSlotStatus = (sectionId, slotNumber) => {
+    const uniqueSlotId = `${sectionId}-${slotNumber}`;
+    if (currentSlot === uniqueSlotId) return "current";
+    if (selectedSlot === uniqueSlotId) return "selected";
+    if (showBulkActions && selectedSlots.has(uniqueSlotId))
       return "bulk-selected";
-    const slot = slots.find((s) => s.number === slotNumber);
+    const slot = slots.find((s) => s.number === uniqueSlotId);
 
     // Use effectiveStatus for sensor-based system, fallback to status for compatibility
     const status = slot
@@ -222,19 +223,21 @@ const ParkingLayoutCanvas = ({
   };
 
   // Handle slot click
-  const handleSlotClick = (slotNumber) => {
+  const handleSlotClick = (sectionId, slotNumber) => {
+    const uniqueSlotId = `${sectionId}-${slotNumber}`;
     if (showBulkActions && staffMode) {
       // In bulk mode, toggle slot selection
-      onBulkSlotToggle(slotNumber);
+      onBulkSlotToggle(uniqueSlotId);
     } else if (onSlotClick) {
-      onSlotClick(slotNumber);
+      onSlotClick(uniqueSlotId);
     }
   };
 
   // Handle slot hover
-  const handleSlotHover = (slotNumber, isHovering) => {
+  const handleSlotHover = (sectionId, slotNumber, isHovering) => {
+    const uniqueSlotId = `${sectionId}-${slotNumber}`;
     if (onSlotHover) {
-      onSlotHover(slotNumber, isHovering);
+      onSlotHover(uniqueSlotId, isHovering);
     }
   };
 
@@ -272,13 +275,14 @@ const ParkingLayoutCanvas = ({
   };
 
   // Render parking slot
-  const renderSlot = (slotNumber, x, y, slotWidth, slotHeight) => {
-    const status = getSlotStatus(slotNumber);
+  const renderSlot = (sectionId, slotNumber, x, y, slotWidth, slotHeight) => {
+    const status = getSlotStatus(sectionId, slotNumber);
     const color = getSlotColor(status);
     const borderColor = getSlotBorderColor(status);
+    const uniqueSlotId = `${sectionId}-${slotNumber}`;
 
     return (
-      <Group key={slotNumber} x={x} y={y}>
+      <Group key={uniqueSlotId} x={x} y={y}>
         <Rect
           width={slotWidth}
           height={slotHeight}
@@ -286,10 +290,10 @@ const ParkingLayoutCanvas = ({
           stroke={borderColor}
           strokeWidth={2}
           cornerRadius={2}
-          onClick={() => handleSlotClick(slotNumber)}
-          onMouseEnter={() => handleSlotHover(slotNumber, true)}
-          onMouseLeave={() => handleSlotHover(slotNumber, false)}
-          onTap={() => handleSlotClick(slotNumber)}
+          onClick={() => handleSlotClick(sectionId, slotNumber)}
+          onMouseEnter={() => handleSlotHover(sectionId, slotNumber, true)}
+          onMouseLeave={() => handleSlotHover(sectionId, slotNumber, false)}
+          onTap={() => handleSlotClick(sectionId, slotNumber)}
           listening={true}
         />
         <Text
@@ -320,7 +324,14 @@ const ParkingLayoutCanvas = ({
         const x = section.x + col * (section.slotWidth + slotSpacing);
         const y = section.y + row * (section.slotHeight + slotSpacing) + 30;
         slots.push(
-          renderSlot(slotNumber, x, y, section.slotWidth, section.slotHeight)
+          renderSlot(
+            section.id,
+            slotNumber,
+            x,
+            y,
+            section.slotWidth,
+            section.slotHeight
+          )
         );
         slotNumber++;
       }
@@ -526,7 +537,7 @@ const ParkingLayoutCanvas = ({
         {/* right to left 2*/}
         {renderArrow([width + 80, 350, width / 6 - 10, 350])}
         {/* left to right 3 */}
-        {renderArrow([width / 6 - 10, 540, width + 80, 540])}
+        {renderArrow([width / 6 - 10, 530, width + 80, 530])}
         {/* Entry 2 to Exit 1 */}
         {renderArrow([width + 100, 570, width + 100, 60])}
       </Group>
