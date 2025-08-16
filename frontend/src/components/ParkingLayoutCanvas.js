@@ -10,13 +10,40 @@ const ParkingLayoutCanvas = ({
   onSlotHover = () => {},
   editable = false,
   width = 800,
-  height = 600
+  height = 600,
+  staffMode = false,
+  showBulkActions = false,
+  selectedSlots = new Set(),
+  onBulkSlotToggle = () => {}
 }) => {
   const [stageScale, setStageScale] = useState(1);
   const [stageX, setStageX] = useState(0);
   const [stageY, setStageY] = useState(0);
   const [dragEnabled, setDragEnabled] = useState(false);
+  const [canvasSize, setCanvasSize] = useState({ width, height });
   const stageRef = useRef();
+  const containerRef = useRef();
+
+  // Make canvas responsive to container
+  useEffect(() => {
+    const updateCanvasSize = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const aspectRatio = height / width;
+        const newHeight = containerWidth * aspectRatio;
+        
+        setCanvasSize({
+          width: containerWidth,
+          height: Math.min(newHeight, 650) // Max height limit
+        });
+      }
+    };
+
+    updateCanvasSize();
+    window.addEventListener('resize', updateCanvasSize);
+    
+    return () => window.removeEventListener('resize', updateCanvasSize);
+  }, [width, height]);
 
   // Parking sections configuration
   const sections = [
@@ -35,17 +62,39 @@ const ParkingLayoutCanvas = ({
   const getSlotStatus = (slotNumber) => {
     if (currentSlot === slotNumber) return 'current';
     if (selectedSlot === slotNumber) return 'selected';
+    if (showBulkActions && selectedSlots.has(slotNumber)) return 'bulk-selected';
     const slot = slots.find(s => s.number === slotNumber);
-    return slot ? slot.status || 'available' : 'available';
+    
+    // Use effectiveStatus for sensor-based system, fallback to status for compatibility
+    const status = slot ? (slot.effectiveStatus || slot.status || 'available') : 'available';
+    
+    // Add visual indicator for manual overrides in staff mode
+    if (staffMode && slot?.manualOverride) {
+      return status + '-override';
+    }
+    
+    return status;
   };
 
   // Get slot color based on status
   const getSlotColor = (status) => {
+    // Handle override statuses
+    if (status.includes('-override')) {
+      const baseStatus = status.replace('-override', '');
+      switch (baseStatus) {
+        case 'available': return '#e8f5e8';
+        case 'occupied': return '#ffe6e6';
+        case 'maintenance': return '#f0f0f0';
+        default: return '#fff8dc';
+      }
+    }
+    
     switch (status) {
       case 'current': return '#28a745';
       case 'selected': return '#667eea';
+      case 'bulk-selected': return '#ff9500';
       case 'occupied': return '#dc3545';
-      case 'reserved': return '#ffc107';
+      // case 'reserved': return '#ffc107';
       case 'maintenance': return '#6c757d';
       default: return '#f8f9fa';
     }
@@ -53,11 +102,17 @@ const ParkingLayoutCanvas = ({
 
   // Get slot border color
   const getSlotBorderColor = (status) => {
+    // Handle override statuses with special orange border
+    if (status.includes('-override')) {
+      return '#ff6b00'; // Orange border for manual overrides
+    }
+    
     switch (status) {
       case 'current': return '#1e7e34';
       case 'selected': return '#5a67d8';
+      case 'bulk-selected': return '#ff6b00';
       case 'occupied': return '#c82333';
-      case 'reserved': return '#e0a800';
+      // case 'reserved': return '#e0a800';
       case 'maintenance': return '#5a6268';
       default: return '#dee2e6';
     }
@@ -65,7 +120,10 @@ const ParkingLayoutCanvas = ({
 
   // Handle slot click
   const handleSlotClick = (slotNumber) => {
-    if (onSlotClick) {
+    if (showBulkActions && staffMode) {
+      // In bulk mode, toggle slot selection
+      onBulkSlotToggle(slotNumber);
+    } else if (onSlotClick) {
       onSlotClick(slotNumber);
     }
   };
@@ -316,21 +374,27 @@ const ParkingLayoutCanvas = ({
           <div className="legend-color" style={{ backgroundColor: '#667eea' }}></div>
           <span>Selected</span>
         </div>
-        <div className="legend-item">
+        {/* <div className="legend-item">
           <div className="legend-color" style={{ backgroundColor: '#ffc107' }}></div>
           <span>Reserved</span>
-        </div>
+        </div> */}
         <div className="legend-item">
           <div className="legend-color" style={{ backgroundColor: '#6c757d' }}></div>
           <span>Maintenance</span>
         </div>
+        {staffMode && showBulkActions && (
+          <div className="legend-item">
+            <div className="legend-color" style={{ backgroundColor: '#ff9500' }}></div>
+            <span>Bulk Selected</span>
+          </div>
+        )}
       </div>
 
       {/* Konva Stage */}
-      <div className="canvas-container">
+      <div className="canvas-container" ref={containerRef}>
         <Stage
-          width={width}
-          height={height}
+          width={canvasSize.width}
+          height={canvasSize.height}
           onWheel={handleWheel}
           scaleX={stageScale}
           scaleY={stageScale}
@@ -348,8 +412,8 @@ const ParkingLayoutCanvas = ({
             <Rect
               x={0}
               y={0}
-              width={width}
-              height={height}
+              width={canvasSize.width}
+              height={canvasSize.height}
               fill="#f8f9fa"
               listening={false}
             />

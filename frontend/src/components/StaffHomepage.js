@@ -45,9 +45,9 @@ const StaffHomepage = () => {
         <div className="dashboard-grid">
           <div className="dashboard-card staff-card">
             <div className="card-icon">🏢</div>
-            <h3>Parking Management</h3>
-            <p>Monitor and manage parking spots availability</p>
-            <button className="card-button staff-button">Manage Spots</button>
+            <h3>Parking Slot Management</h3>
+            <p>Monitor and manually manage parking slot statuses</p>
+            <Link to="/staff/parking-slots" className="card-button staff-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>Manage Slots</Link>
           </div>
 
           <div className="dashboard-card staff-card">
@@ -83,6 +83,13 @@ const StaffHomepage = () => {
             <h3>Emergency Management</h3>
             <p>Handle emergency situations and incidents</p>
             <Link to="/emergency-management" className="card-button staff-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>Emergency</Link>
+          </div>
+
+          <div className="dashboard-card staff-card demo-card">
+            <div className="card-icon">🎯</div>
+            <h3>Interactive Layout Demo</h3>
+            <p>Experience the new Konva.js interactive parking layout</p>
+            <Link to="/parking-demo" className="card-button demo-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>Try Demo</Link>
           </div>
         </div>
       </main>

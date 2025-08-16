@@ -15,6 +15,7 @@ import ParkingHistory from './components/ParkingHistory';
 import ParkingSlot from './components/ParkingSlot';
 import EnhancedParkingSlot from './components/EnhancedParkingSlot';
 import ParkingLayoutDemo from './components/ParkingLayoutDemo';
+import StaffParkingSlotManagement from './components/StaffParkingSlotManagement';
 import ParkingManagement from './components/ParkingManagement';
 import PaymentHistory from './components/PaymentHistory';
 import RevenueManagement from './components/RevenueManagement';
@@ -80,6 +81,7 @@ function AppContent() {
         <Route path="/cars/:carId/parking-slot" element={<ProtectedRoute><EnhancedParkingSlot /></ProtectedRoute>} />
         <Route path="/cars/:carId/parking-slot-old" element={<ProtectedRoute><ParkingSlot /></ProtectedRoute>} />
         <Route path="/parking-demo" element={<ProtectedRoute><ParkingLayoutDemo /></ProtectedRoute>} />
+        <Route path="/staff/parking-slots" element={<ProtectedRoute><StaffParkingSlotManagement /></ProtectedRoute>} />
         <Route path="/parking" element={<ProtectedRoute><ParkingManagement /></ProtectedRoute>} />
         <Route path="/payment-history" element={<ProtectedRoute><PaymentHistory /></ProtectedRoute>} />
         <Route path="/revenue-management" element={<ProtectedRoute><RevenueManagement /></ProtectedRoute>} />
