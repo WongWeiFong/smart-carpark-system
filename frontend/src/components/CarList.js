@@ -1,8 +1,8 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useCars } from '../contexts/CarContext';
-import './CarManagement.css';
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useCars } from "../contexts/CarContext";
+import "./CarManagement.css";
 
 const CarList = () => {
   const { user, logout } = useAuth();
@@ -10,12 +10,12 @@ const CarList = () => {
   const navigate = useNavigate();
 
   const handleDeleteCar = async (carId) => {
-    if (window.confirm('Are you sure you want to delete this car?')) {
+    if (window.confirm("Are you sure you want to delete this car?")) {
       try {
         await deleteCar(carId);
-        alert('Car deleted successfully!');
+        alert("Car deleted successfully!");
       } catch (error) {
-        alert('Failed to delete car. Please try again.');
+        alert("Failed to delete car. Please try again.");
       }
     }
   };
@@ -25,7 +25,7 @@ const CarList = () => {
   };
 
   const handleBackToHome = () => {
-    navigate('/home');
+    navigate("/home");
   };
 
   return (
@@ -39,8 +39,12 @@ const CarList = () => {
             <h1 className="page-title">My Cars</h1>
           </div>
           <div className="user-info">
-            <span className="welcome-text">Welcome, {user?.name || user?.email}!</span>
-            <button onClick={handleLogout} className="logout-btn">Logout</button>
+            <span className="welcome-text">
+              Welcome, {user?.firstName + " " + user?.lastName}!
+            </span>
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
           </div>
         </div>
       </header>
@@ -72,22 +76,24 @@ const CarList = () => {
             {cars.map((car) => (
               <div key={car.id} className="car-card">
                 <div className="car-card-header">
-                  <h3 className="car-title">{car.make} {car.model}</h3>
+                  <h3 className="car-title">
+                    {car.make} {car.model}
+                  </h3>
                   <span className="car-year">{car.year}</span>
                 </div>
-                
+
                 <div className="car-details">
                   <div className="car-plate">
                     <span className="plate-label">Plate Number:</span>
                     <span className="plate-number">{car.plateNumber}</span>
                   </div>
-                  
+
                   <div className="car-info">
                     <div className="info-item">
                       <span className="info-label">Color:</span>
                       <span className="info-value">{car.color}</span>
                     </div>
-                    
+
                     <div className="info-item">
                       <span className="info-label">Type:</span>
                       <span className="info-value">{car.type}</span>
@@ -96,13 +102,10 @@ const CarList = () => {
                 </div>
 
                 <div className="car-actions">
-                  <Link 
-                    to={`/cars/${car.id}`} 
-                    className="view-details-button"
-                  >
+                  <Link to={`/cars/${car.id}`} className="view-details-button">
                     View Details
                   </Link>
-                  <button 
+                  <button
                     onClick={() => handleDeleteCar(car.id)}
                     className="delete-button"
                     disabled={loading}
@@ -119,4 +122,4 @@ const CarList = () => {
   );
 };
 
-export default CarList; 
+export default CarList;

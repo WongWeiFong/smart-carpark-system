@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check if user is already logged in (from localStorage)
-    const savedUser = localStorage.getItem('user');
+    const savedUser = localStorage.getItem("user");
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
@@ -26,15 +26,20 @@ export const AuthProvider = ({ children }) => {
   const login = (userData, role) => {
     const userWithRole = {
       ...userData,
-      role: role // 'user' or 'staff'
+      role: role,
     };
     setUser(userWithRole);
-    localStorage.setItem('user', JSON.stringify(userWithRole));
+    localStorage.setItem("user", JSON.stringify(userWithRole));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
+  };
+
+  const getAuthToken = () => {
+    return localStorage.getItem("authToken");
   };
 
   const isAuthenticated = () => {
@@ -42,11 +47,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isStaff = () => {
-    return user?.role === 'staff';
+    const role = user?.role?.toLowerCase();
+    return role === "staff" || role === "admin";
   };
 
   const isUser = () => {
-    return user?.role === 'user';
+    const role = user?.role?.toLowerCase();
+    return role === "user";
   };
 
   const value = {
@@ -56,12 +63,9 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     isStaff,
     isUser,
-    loading
+    loading,
+    getAuthToken,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-}; 
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

@@ -74,7 +74,7 @@ const ParkingHistory = () => {
           </div>
           <div className="user-info">
             <span className="welcome-text">
-              Welcome, {user?.name || user?.email}!
+              Welcome, {user?.firstName + " " + user?.lastName}!
             </span>
             <button onClick={handleLogout} className="logout-btn">
               Logout

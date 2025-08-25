@@ -5,10 +5,12 @@ import "./Auth.css";
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
+    carPlate: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
@@ -42,7 +44,13 @@ const Register = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          carPlate: formData.carPlate || null,
+        }),
       });
 
       const ct = res.headers.get("content-type") || "";
@@ -52,7 +60,7 @@ const Register = () => {
       if (!res.ok)
         throw new Error(data?.error || data?.raw || "Registration failed");
       const { token, user } = data;
-      localStorage.setItem("token", token);
+      localStorage.setItem("authToken", token);
       login(user, user.role || "user");
       navigate("/home");
     } catch (error) {
@@ -69,16 +77,29 @@ const Register = () => {
         <h2 className="auth-title">User Registration</h2>
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="name">Full Name</label>
+            <label htmlFor="firstName">First Name</label>
             <input
               type="text"
-              id="name"
-              name="name"
-              value={formData.name}
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
               onChange={handleChange}
               required
               className="form-input"
-              placeholder="Enter your full name"
+              placeholder="Enter your first name"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="lastName">Last Name</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+              className="form-input"
+              placeholder="Enter your last name"
             />
           </div>
           <div className="form-group">
@@ -92,6 +113,18 @@ const Register = () => {
               required
               className="form-input"
               placeholder="Enter your email"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="carPlate">Car Plate Number (Optional)</label>
+            <input
+              type="text"
+              id="carPlate"
+              name="carPlate"
+              value={formData.carPlate}
+              onChange={handleChange}
+              className="form-input"
+              placeholder="Enter your car plate number"
             />
           </div>
           <div className="form-group">

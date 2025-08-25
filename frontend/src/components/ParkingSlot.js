@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useCars } from '../contexts/CarContext';
-import { useParking } from '../contexts/ParkingContext';
-import './ParkingComponents.css';
+import React, { useState, useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useCars } from "../contexts/CarContext";
+import { useParking } from "../contexts/ParkingContext";
+import "./ParkingComponents.css";
 
 const ParkingSlot = () => {
   const { carId } = useParams();
   const { user, logout } = useAuth();
   const { getCarById } = useCars();
   const { getParkingSlot, updateParkingSlot, loading } = useParking();
-  
+
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState('');
-  const [selectedSection, setSelectedSection] = useState('A');
+  const [selectedSlot, setSelectedSlot] = useState("");
+  const [selectedSection, setSelectedSection] = useState("A");
 
   const car = getCarById(carId);
   const parkingSlot = getParkingSlot(carId);
@@ -32,7 +32,9 @@ const ParkingSlot = () => {
       <div className="parking-container">
         <div className="error-container">
           <h2>Car not found</h2>
-          <Link to="/cars" className="back-button">Back to Car List</Link>
+          <Link to="/cars" className="back-button">
+            Back to Car List
+          </Link>
         </div>
       </div>
     );
@@ -40,18 +42,18 @@ const ParkingSlot = () => {
 
   const handleSubmitSlot = async () => {
     if (!selectedSlot || !selectedSection) {
-      alert('Please select a parking slot');
+      alert("Please select a parking slot");
       return;
     }
-    
+
     const fullSlotNumber = `${selectedSection}${selectedSlot}`;
-    
+
     try {
       await updateParkingSlot(carId, fullSlotNumber);
       setIsEditing(false);
-      alert('Parking slot updated successfully!');
+      alert("Parking slot updated successfully!");
     } catch (error) {
-      alert('Failed to update parking slot. Please try again.');
+      alert("Failed to update parking slot. Please try again.");
     }
   };
 
@@ -78,13 +80,16 @@ const ParkingSlot = () => {
     const slots = [];
     for (let i = 1; i <= 50; i++) {
       const slotNumber = `${section}${i}`;
-      const isSelected = selectedSection === section && selectedSlot === i.toString();
+      const isSelected =
+        selectedSection === section && selectedSlot === i.toString();
       const isCurrent = parkingSlot?.slotNumber === slotNumber;
-      
+
       slots.push(
         <div
           key={slotNumber}
-          className={`parking-slot ${isSelected ? 'selected' : ''} ${isCurrent ? 'current' : ''}`}
+          className={`parking-slot ${isSelected ? "selected" : ""} ${
+            isCurrent ? "current" : ""
+          }`}
           onClick={() => {
             if (isEditing) {
               setSelectedSection(section);
@@ -99,7 +104,7 @@ const ParkingSlot = () => {
     return slots;
   };
 
-  const sections = ['A', 'B', 'C', 'D'];
+  const sections = ["A", "B", "C", "D"];
 
   return (
     <div className="parking-container">
@@ -112,8 +117,12 @@ const ParkingSlot = () => {
             <h1 className="page-title">Parking Slot</h1>
           </div>
           <div className="user-info">
-            <span className="welcome-text">Welcome, {user?.name || user?.email}!</span>
-            <button onClick={handleLogout} className="logout-btn">Logout</button>
+            <span className="welcome-text">
+              Welcome, {user?.firstName + " " + user?.lastName}!
+            </span>
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
           </div>
         </div>
       </header>
@@ -125,7 +134,9 @@ const ParkingSlot = () => {
             <div className="car-info-card">
               <div className="car-icon">🚗</div>
               <div className="car-info-details">
-                <h3>{car.make} {car.model}</h3>
+                <h3>
+                  {car.make} {car.model}
+                </h3>
                 <p className="plate-number">{car.plateNumber}</p>
               </div>
             </div>
@@ -141,7 +152,10 @@ const ParkingSlot = () => {
                     {parkingSlot.slotNumber}
                   </div>
                   <div className="slot-details">
-                    <p>Last updated: {new Date(parkingSlot.updatedAt).toLocaleString()}</p>
+                    <p>
+                      Last updated:{" "}
+                      {new Date(parkingSlot.updatedAt).toLocaleString()}
+                    </p>
                     <button onClick={handleEdit} className="edit-slot-btn">
                       Edit Slot
                     </button>
@@ -212,20 +226,20 @@ const ParkingSlot = () => {
             <div className="slot-actions">
               <div className="slot-actions-card">
                 <div className="selected-slot-info">
-                  <h4>Selected Slot: {selectedSection}{selectedSlot}</h4>
+                  <h4>
+                    Selected Slot: {selectedSection}
+                    {selectedSlot}
+                  </h4>
                 </div>
                 <div className="action-buttons">
-                  <button 
+                  <button
                     onClick={handleSubmitSlot}
                     disabled={loading || !selectedSlot}
                     className="confirm-slot-btn"
                   >
-                    {loading ? 'Updating...' : 'Confirm Slot'}
+                    {loading ? "Updating..." : "Confirm Slot"}
                   </button>
-                  <button 
-                    onClick={handleCancel}
-                    className="cancel-slot-btn"
-                  >
+                  <button onClick={handleCancel} className="cancel-slot-btn">
                     Cancel
                   </button>
                 </div>
@@ -238,4 +252,4 @@ const ParkingSlot = () => {
   );
 };
 
-export default ParkingSlot; 
+export default ParkingSlot;

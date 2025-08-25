@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useCars } from '../contexts/CarContext';
-import { useParking } from '../contexts/ParkingContext';
-import './CarManagement.css';
+import React, { useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useCars } from "../contexts/CarContext";
+import { useParking } from "../contexts/ParkingContext";
+import "./CarManagement.css";
 
 const CarDetails = () => {
   const { carId } = useParams();
@@ -24,7 +24,9 @@ const CarDetails = () => {
         <div className="error-container">
           <h2>Car not found</h2>
           <p>The car you're looking for doesn't exist or has been deleted.</p>
-          <Link to="/cars" className="back-button">Back to Car List</Link>
+          <Link to="/cars" className="back-button">
+            Back to Car List
+          </Link>
         </div>
       </div>
     );
@@ -39,7 +41,7 @@ const CarDetails = () => {
       color: car.color,
       plateNumber: car.plateNumber,
       type: car.type,
-      description: car.description || ''
+      description: car.description || "",
     });
   };
 
@@ -47,9 +49,9 @@ const CarDetails = () => {
     try {
       await updateCar(carId, editData);
       setIsEditing(false);
-      alert('Car updated successfully!');
+      alert("Car updated successfully!");
     } catch (error) {
-      alert('Failed to update car. Please try again.');
+      alert("Failed to update car. Please try again.");
     }
   };
 
@@ -59,13 +61,17 @@ const CarDetails = () => {
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this car? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this car? This action cannot be undone."
+      )
+    ) {
       try {
         await deleteCar(carId);
-        alert('Car deleted successfully!');
-        navigate('/cars');
+        alert("Car deleted successfully!");
+        navigate("/cars");
       } catch (error) {
-        alert('Failed to delete car. Please try again.');
+        alert("Failed to delete car. Please try again.");
       }
     }
   };
@@ -73,7 +79,7 @@ const CarDetails = () => {
   const handleInputChange = (e) => {
     setEditData({
       ...editData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -92,8 +98,12 @@ const CarDetails = () => {
             <h1 className="page-title">Car Details</h1>
           </div>
           <div className="user-info">
-            <span className="welcome-text">Welcome, {user?.name || user?.email}!</span>
-            <button onClick={handleLogout} className="logout-btn">Logout</button>
+            <span className="welcome-text">
+              Welcome, {user?.firstName + " " + user?.lastName}!
+            </span>
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
           </div>
         </div>
       </header>
@@ -133,7 +143,9 @@ const CarDetails = () => {
                   </div>
                 ) : (
                   <>
-                    <h2 className="car-main-title">{car.make} {car.model}</h2>
+                    <h2 className="car-main-title">
+                      {car.make} {car.model}
+                    </h2>
                     <span className="car-year-badge">{car.year}</span>
                   </>
                 )}
@@ -155,7 +167,9 @@ const CarDetails = () => {
                         className="edit-input"
                       />
                     ) : (
-                      <span className="detail-value plate-display">{car.plateNumber}</span>
+                      <span className="detail-value plate-display">
+                        {car.plateNumber}
+                      </span>
                     )}
                   </div>
 
@@ -218,55 +232,63 @@ const CarDetails = () => {
                       rows="3"
                     />
                   ) : (
-                    <p className="car-description">{car.description || 'No description available'}</p>
+                    <p className="car-description">
+                      {car.description || "No description available"}
+                    </p>
                   )}
                 </div>
               )}
 
-            {/* Balance and Parking Info Section */}
-            <div className="detail-section">
-              <h3>Account & Parking Info</h3>
-              <div className="detail-grid">
-                <div className="detail-item">
-                  <span className="detail-label">Balance Spent:</span>
-                  <span className="detail-value balance-display">${balance.toFixed(2)}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Current Parking Slot:</span>
-                  <span className="detail-value">
-                    {parkingSlot ? parkingSlot.slotNumber : 'Not assigned'}
-                  </span>
+              {/* Balance and Parking Info Section */}
+              <div className="detail-section">
+                <h3>Account & Parking Info</h3>
+                <div className="detail-grid">
+                  <div className="detail-item">
+                    <span className="detail-label">Balance Spent:</span>
+                    <span className="detail-value balance-display">
+                      ${balance.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">Current Parking Slot:</span>
+                    <span className="detail-value">
+                      {parkingSlot ? parkingSlot.slotNumber : "Not assigned"}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Quick Actions Section */}
-            <div className="detail-section">
-              <h3>Quick Actions</h3>
-              <div className="quick-actions-grid">
-                <Link 
-                  to={`/cars/${carId}/history`} 
-                  className="quick-action-button history-button"
-                >
-                  <span className="action-icon">📊</span>
-                  <div className="action-content">
-                    <span className="action-title">View History</span>
-                    <span className="action-description">Entry/exit logs & balance</span>
-                  </div>
-                </Link>
-                
-                <Link 
-                  to={`/cars/${carId}/parking-slot`} 
-                  className="quick-action-button slot-button"
-                >
-                  <span className="action-icon">🅿️</span>
-                  <div className="action-content">
-                    <span className="action-title">Parking Slot</span>
-                    <span className="action-description">Set location on minimap</span>
-                  </div>
-                </Link>
-                
-                {/* <Link 
+              {/* Quick Actions Section */}
+              <div className="detail-section">
+                <h3>Quick Actions</h3>
+                <div className="quick-actions-grid">
+                  <Link
+                    to={`/cars/${carId}/history`}
+                    className="quick-action-button history-button"
+                  >
+                    <span className="action-icon">📊</span>
+                    <div className="action-content">
+                      <span className="action-title">View History</span>
+                      <span className="action-description">
+                        Entry/exit logs & balance
+                      </span>
+                    </div>
+                  </Link>
+
+                  <Link
+                    to={`/cars/${carId}/parking-slot`}
+                    className="quick-action-button slot-button"
+                  >
+                    <span className="action-icon">🅿️</span>
+                    <div className="action-content">
+                      <span className="action-title">Parking Slot</span>
+                      <span className="action-description">
+                        Set location on minimap
+                      </span>
+                    </div>
+                  </Link>
+
+                  {/* <Link 
                   to="/payment-history" 
                   className="quick-action-button payment-button"
                 >
@@ -276,23 +298,22 @@ const CarDetails = () => {
                     <span className="action-description">View transactions & top-ups</span>
                   </div>
                 </Link> */}
+                </div>
               </div>
-            </div>
-            
             </div>
 
             <div className="car-details-actions">
               {isEditing ? (
                 <div className="edit-actions">
-                  <button 
-                    onClick={handleSave} 
+                  <button
+                    onClick={handleSave}
                     className="save-button"
                     disabled={loading}
                   >
-                    {loading ? 'Saving...' : 'Save Changes'}
+                    {loading ? "Saving..." : "Save Changes"}
                   </button>
-                  <button 
-                    onClick={handleCancel} 
+                  <button
+                    onClick={handleCancel}
                     className="cancel-button"
                     disabled={loading}
                   >
@@ -304,8 +325,8 @@ const CarDetails = () => {
                   <button onClick={handleEdit} className="edit-button">
                     Edit Details
                   </button>
-                  <button 
-                    onClick={handleDelete} 
+                  <button
+                    onClick={handleDelete}
                     className="delete-button"
                     disabled={loading}
                   >
@@ -321,4 +342,4 @@ const CarDetails = () => {
   );
 };
 
-export default CarDetails; 
+export default CarDetails;

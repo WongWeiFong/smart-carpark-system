@@ -47,7 +47,7 @@ const Login = () => {
       // Mock successful login
       const { token, user } = data;
 
-      localStorage.setItem("token", token);
+      localStorage.setItem("authToken", token);
       login(user, user.role || "user");
       navigate("/home");
     } catch (err) {

@@ -1,56 +1,60 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useCars } from '../contexts/CarContext';
-import { useParking } from '../contexts/ParkingContext';
-import './ParkingComponents.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useCars } from "../contexts/CarContext";
+import { useParking } from "../contexts/ParkingContext";
+import "./ParkingComponents.css";
 
 const ParkingManagement = () => {
   const { user, logout } = useAuth();
   const { cars, loading: carsLoading, deleteCar } = useCars();
-  const { getParkingSlot, updateParkingSlot, loading: parkingLoading } = useParking();
+  const {
+    getParkingSlot,
+    updateParkingSlot,
+    loading: parkingLoading,
+  } = useParking();
   const navigate = useNavigate();
   const [editingSlot, setEditingSlot] = useState(null);
-  const [newSlotNumber, setNewSlotNumber] = useState('');
+  const [newSlotNumber, setNewSlotNumber] = useState("");
 
   const handleLogout = () => {
     logout();
   };
 
   const handleBackToHome = () => {
-    navigate('/home');
+    navigate("/home");
   };
 
   const handleDeleteCar = async (carId) => {
-    if (window.confirm('Are you sure you want to delete this car?')) {
+    if (window.confirm("Are you sure you want to delete this car?")) {
       try {
         await deleteCar(carId);
-        alert('Car deleted successfully!');
+        alert("Car deleted successfully!");
       } catch (error) {
-        alert('Failed to delete car. Please try again.');
+        alert("Failed to delete car. Please try again.");
       }
     }
   };
 
   const handleEditSlot = (carId, currentSlot) => {
     setEditingSlot(carId);
-    setNewSlotNumber(currentSlot || '');
+    setNewSlotNumber(currentSlot || "");
   };
 
   const handleSaveSlot = async (carId) => {
     try {
       await updateParkingSlot(carId, newSlotNumber);
       setEditingSlot(null);
-      setNewSlotNumber('');
-      alert('Parking slot updated successfully!');
+      setNewSlotNumber("");
+      alert("Parking slot updated successfully!");
     } catch (error) {
-      alert('Failed to update parking slot. Please try again.');
+      alert("Failed to update parking slot. Please try again.");
     }
   };
 
   const handleCancelEdit = () => {
     setEditingSlot(null);
-    setNewSlotNumber('');
+    setNewSlotNumber("");
   };
 
   const loading = carsLoading || parkingLoading;
@@ -66,8 +70,12 @@ const ParkingManagement = () => {
             <h1 className="page-title">Parking Management</h1>
           </div>
           <div className="user-info">
-            <span className="welcome-text">Welcome, {user?.name || user?.email}!</span>
-            <button onClick={handleLogout} className="logout-btn">Logout</button>
+            <span className="welcome-text">
+              Welcome, {user?.firstName + " " + user?.lastName}!
+            </span>
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
           </div>
         </div>
       </header>
@@ -81,7 +89,11 @@ const ParkingManagement = () => {
           <div className="summary-info">
             <span className="car-count">Total Cars: {cars.length}</span>
             <span className="parked-count">
-              Parked: {cars.filter(car => car.parkingSlot || getParkingSlot(car.id)).length}
+              Parked:{" "}
+              {
+                cars.filter((car) => car.parkingSlot || getParkingSlot(car.id))
+                  .length
+              }
             </span>
           </div>
         </div>
@@ -103,14 +115,17 @@ const ParkingManagement = () => {
         ) : (
           <div className="parking-grid">
             {cars.map((car) => {
-              const parkingSlot = car.parkingSlot || getParkingSlot(car.id)?.slotNumber;
+              const parkingSlot =
+                car.parkingSlot || getParkingSlot(car.id)?.slotNumber;
               const isEditing = editingSlot === car.id;
-              
+
               return (
                 <div key={car.id} className="parking-card">
                   <div className="parking-card-header">
                     <div className="car-info">
-                      <h3 className="car-title">{car.make} {car.model}</h3>
+                      <h3 className="car-title">
+                        {car.make} {car.model}
+                      </h3>
                       <span className="car-plate">{car.plateNumber}</span>
                     </div>
                     <div className="parking-status">
@@ -121,13 +136,15 @@ const ParkingManagement = () => {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="parking-details">
                     <div className="detail-row">
                       <span className="detail-label">Car Details:</span>
-                      <span className="detail-value">{car.year} {car.color} {car.type}</span>
+                      <span className="detail-value">
+                        {car.year} {car.color} {car.type}
+                      </span>
                     </div>
-                    
+
                     <div className="detail-row">
                       <span className="detail-label">Parking Slot:</span>
                       {isEditing ? (
@@ -140,14 +157,14 @@ const ParkingManagement = () => {
                             className="slot-input"
                           />
                           <div className="slot-edit-actions">
-                            <button 
+                            <button
                               onClick={() => handleSaveSlot(car.id)}
                               className="save-btn"
                               disabled={!newSlotNumber.trim()}
                             >
                               ✓
                             </button>
-                            <button 
+                            <button
                               onClick={handleCancelEdit}
                               className="cancel-btn"
                             >
@@ -158,7 +175,7 @@ const ParkingManagement = () => {
                       ) : (
                         <div className="slot-display-container">
                           <span className="detail-value">
-                            {parkingSlot || 'Not assigned'}
+                            {parkingSlot || "Not assigned"}
                           </span>
                           <button
                             onClick={() => handleEditSlot(car.id, parkingSlot)}
@@ -173,19 +190,16 @@ const ParkingManagement = () => {
                   </div>
 
                   <div className="parking-actions-row">
-                    <Link 
-                      to={`/cars/${car.id}`} 
+                    <Link
+                      to={`/cars/${car.id}`}
                       className="view-details-button"
                     >
                       View Details
                     </Link>
-                    <Link 
-                      to={`/cars/${car.id}`} 
-                      className="edit-button"
-                    >
+                    <Link to={`/cars/${car.id}`} className="edit-button">
                       Edit Car
                     </Link>
-                    <button 
+                    <button
                       onClick={() => handleDeleteCar(car.id)}
                       className="delete-button"
                       disabled={loading}
@@ -203,4 +217,4 @@ const ParkingManagement = () => {
   );
 };
 
-export default ParkingManagement; 
+export default ParkingManagement;

@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import './Homepage.css';
+import React from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import "./Homepage.css";
 
 const UserHomepage = () => {
   const { user, logout } = useAuth();
@@ -16,19 +16,33 @@ const UserHomepage = () => {
         <div className="header-content">
           <h1 className="homepage-title">Smart Carpark System</h1>
           <div className="user-info">
-            <span className="welcome-text">Welcome, {user?.name || user?.email}!</span>
-            <button onClick={handleLogout} className="logout-btn">Logout</button>
+            <span className="welcome-text">
+              Welcome, {user?.firstName + " " + user?.lastName}!
+            </span>
+            <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
           </div>
         </div>
       </header>
 
       <main className="homepage-main">
         <div className="dashboard-grid">
-        <div className="dashboard-card">
+          <div className="dashboard-card">
             <div className="card-icon">🚗</div>
             <h3>My Car(s)</h3>
             <p>Add your car plate number for auto deduction</p>
-            <Link to="/cars" className="card-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>View Cars</Link>
+            <Link
+              to="/cars"
+              className="card-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              View Cars
+            </Link>
           </div>
 
           <div className="dashboard-card">
@@ -49,14 +63,34 @@ const UserHomepage = () => {
             <div className="card-icon">📍</div>
             <h3>Current Parking</h3>
             <p>View all your cars with parking slots and manage them</p>
-            <Link to="/parking" className="card-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>Manage Parking</Link>
+            <Link
+              to="/parking"
+              className="card-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              Manage Parking
+            </Link>
           </div>
 
           <div className="dashboard-card">
             <div className="card-icon">💳</div>
             <h3>Payment History</h3>
             <p>View your parking payment history and receipts</p>
-            <Link to="/payment-history" className="card-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>View History</Link>
+            <Link
+              to="/payment-history"
+              className="card-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              View History
+            </Link>
           </div>
 
           <div className="dashboard-card">
@@ -76,8 +110,21 @@ const UserHomepage = () => {
           <div className="dashboard-card demo-card">
             <div className="card-icon">🎯</div>
             <h3>Interactive Layout Demo</h3>
-            <p>Experience the new Konva.js parking layout with zoom, pan & click features</p>
-            <Link to="/parking-demo" className="card-button demo-button" style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>Try Demo</Link>
+            <p>
+              Experience the new Konva.js parking layout with zoom, pan & click
+              features
+            </p>
+            <Link
+              to="/parking-demo"
+              className="card-button demo-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              Try Demo
+            </Link>
           </div>
         </div>
       </main>
@@ -85,4 +132,4 @@ const UserHomepage = () => {
   );
 };
 
-export default UserHomepage; 
+export default UserHomepage;
