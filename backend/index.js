@@ -5,44 +5,93 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const {
   DynamoDBDocumentClient,
   ScanCommand,
+  GetCommand,
 } = require("@aws-sdk/lib-dynamodb");
+const { auth } = require("./middleware/auth");
+
+console.log("=== BOOT DIAG ===");
+console.log("AWS_REGION:", process.env.AWS_REGION);
+console.log("Creds present:", {
+  ID: !!process.env.AWS_ACCESS_KEY_ID,
+  SECRET: !!process.env.AWS_SECRET_ACCESS_KEY,
+  SESSION: !!process.env.AWS_SESSION_TOKEN, // should be true on Educate
+});
+console.log("JWT secret present:", !!process.env.JWT_SECRET);
+console.log("=================");
 
 const app = express();
-app.use(cors());
+
+// CORS – allow your React dev server
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
-// Configure DynamoDB client
+// ---- DynamoDB client ----
 const client = new DynamoDBClient({
   region: process.env.AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    sessionToken: process.env.AWS_SESSION_TOKEN,
+    sessionToken: process.env.AWS_SESSION_TOKEN, // required on Educate
   },
 });
+const ddb = DynamoDBDocumentClient.from(client);
 
-const dynamo = DynamoDBDocumentClient.from(client);
-const TABLE_NAME = "Users";
+const USERS_TABLE = "Users";
 
 // Health check
-app.get("/api/test", (req, res) => {
-  res.send({ message: "Backend connected successfully" });
+app.get("/api/test", (_req, res) => {
+  res.json({ ok: true, message: "Backend connected successfully" });
 });
 
-// Get all users
-app.get("/api/data", async (req, res) => {
+// Mount auth router at a RELATIVE path (not a full URL)
+app.use("/api/auth", require("./routes/auth"));
+
+// Example protected endpoint: token echo
+app.get("/api/me", auth(), async (req, res) => {
+  res.json({ me: req.user });
+});
+
+// Protected: get wallet by plate
+app.get("/api/wallet/:plate", auth(), async (req, res) => {
   try {
-    console.log("Scanning table:", TABLE_NAME); // Debug
-    const command = new ScanCommand({ TableName: TABLE_NAME });
-    const data = await dynamo.send(command);
-    console.log("DynamoDB Response:", data); // Debug
-    res.json(data.Items);
+    const plateNumber = req.params.plate;
+    const out = await ddb.send(
+      new GetCommand({ TableName: USERS_TABLE, Key: { plateNumber } })
+    );
+    if (!out.Item) return res.status(404).json({ error: "Not found" });
+    res.json({
+      plateNumber,
+      walletBalance: out.Item.walletBalance,
+      status: out.Item.status,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch wallet" });
+  }
+});
+
+// Public: list all users (for quick admin/testing)
+app.get("/api/users", async (_req, res) => {
+  try {
+    const data = await ddb.send(new ScanCommand({ TableName: USERS_TABLE }));
+    res.json(data.Items || []);
   } catch (err) {
     console.error("Error fetching data:", err);
     res
       .status(500)
       .json({ error: "Failed to fetch data", details: err.message });
   }
+});
+
+// SAFE 404 (no '*' wildcard)
+app.use((req, res) => {
+  res.status(404).json({ error: "Not Found", path: req.originalUrl });
 });
 
 const PORT = 3001;

@@ -28,7 +28,6 @@ import CustomerManagement from "./components/CustomerManagement";
 import AnalyticsReports from "./components/AnalyticsReports";
 import SystemSettings from "./components/SystemSettings";
 import EmergencyManagement from "./components/EmergencyManagement";
-import TestDynamo from "./components/TestDynamoDB";
 import "./App.css";
 
 // Protected Route component
@@ -232,7 +231,6 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-        <Route path="/test" element={<TestDynamo />} />
       </Routes>
     </div>
   );

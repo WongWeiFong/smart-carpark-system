@@ -1,43 +1,58 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import './Auth.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import "./Auth.css";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [errMsg, setErrMsg] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const API = (
+    process.env.REACT_APP_API_URL || "http://localhost:3001/api"
+  ).trim();
+
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+    setErrMsg("");
+
     try {
-      // Simulate API call - replace with actual authentication logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      console.log("API base:", API);
+      const res = await fetch(`${API}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      // const data = await res.json();
+      // if (!res.ok) {
+      //   throw new Error(data?.error || "Login failed");
+      // }
+      const ct = res.headers.get("content-type") || "";
+      const data = ct.includes("application/json")
+        ? await res.json()
+        : { raw: await res.text() };
+      if (!res.ok) throw new Error(data?.error || data?.raw || "Login failed1");
+
       // Mock successful login
-      const userData = {
-        email: formData.email,
-        name: formData.email.split('@')[0] // Extract name from email
-      };
-      
-      login(userData, 'user');
-      navigate('/home');
-    } catch (error) {
-      console.error('Login failed:', error);
-      alert('Login failed. Please try again.');
+      const { token, user } = data;
+
+      localStorage.setItem("token", token);
+      login(user, user.role || "user");
+      navigate("/home");
+    } catch (err) {
+      console.error("Login failed:", err);
+      setErrMsg(err.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -47,6 +62,8 @@ const Login = () => {
     <div className="auth-container">
       <div className="auth-card">
         <h2 className="auth-title">User Login</h2>
+        {errMsg && <div className="auth-error">{errMsg}</div>}
+
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -75,17 +92,27 @@ const Login = () => {
             />
           </div>
           <button type="submit" className="auth-button" disabled={isLoading}>
-            {isLoading ? 'Logging in...' : 'Login'}
+            {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
-        
+
         <div className="auth-links">
-          <p>Don't have an account? <Link to="/register" className="auth-link">Register here</Link></p>
-          <p>Are you a staff member? <Link to="/staff-login" className="auth-link">Staff Login</Link></p>
+          <p>
+            Don't have an account?{" "}
+            <Link to="/register" className="auth-link">
+              Register here
+            </Link>
+          </p>
+          <p>
+            Are you a staff member?{" "}
+            <Link to="/staff-login" className="auth-link">
+              Staff Login
+            </Link>
+          </p>
         </div>
       </div>
     </div>
   );
 };
 
-export default Login; 
+export default Login;

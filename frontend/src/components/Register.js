@@ -1,50 +1,63 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import './Auth.css';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import "./Auth.css";
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [errMsg, setErrMsg] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const API = (
+    process.env.REACT_APP_API_URL || "http://localhost:3001/api"
+  ).trim();
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
+      alert("Passwords do not match!");
       return;
     }
-    
+
     setIsLoading(true);
-    
+    setErrMsg("");
+
     try {
-      // Simulate API call - replace with actual registration logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock successful registration - automatically log in user
-      const userData = {
-        name: formData.name,
-        email: formData.email
-      };
-      
-      login(userData, 'user');
-      navigate('/home');
+      const res = await fetch(`${API}/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const ct = res.headers.get("content-type") || "";
+      const data = ct.includes("application/json")
+        ? await res.json()
+        : { raw: await res.text() };
+      if (!res.ok)
+        throw new Error(data?.error || data?.raw || "Registration failed");
+      const { token, user } = data;
+      localStorage.setItem("token", token);
+      login(user, user.role || "user");
+      navigate("/home");
     } catch (error) {
-      console.error('Registration failed:', error);
-      alert('Registration failed. Please try again.');
+      console.error("Registration failed:", error);
+      setErrMsg("Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -108,17 +121,27 @@ const Register = () => {
             />
           </div>
           <button type="submit" className="auth-button" disabled={isLoading}>
-            {isLoading ? 'Registering...' : 'Register'}
+            {isLoading ? "Registering..." : "Register"}
           </button>
         </form>
-        
+
         <div className="auth-links">
-          <p>Already have an account? <Link to="/login" className="auth-link">Login here</Link></p>
-          <p>Are you a staff member? <Link to="/staff-login" className="auth-link">Staff Login</Link></p>
+          <p>
+            Already have an account?{" "}
+            <Link to="/login" className="auth-link">
+              Login here
+            </Link>
+          </p>
+          <p>
+            Are you a staff member?{" "}
+            <Link to="/staff-login" className="auth-link">
+              Staff Login
+            </Link>
+          </p>
         </div>
       </div>
     </div>
   );
 };
 
-export default Register; 
+export default Register;
