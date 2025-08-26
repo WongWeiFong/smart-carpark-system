@@ -17,7 +17,7 @@ const StaffHomepage = () => {
           <h1 className="homepage-title">Staff Dashboard</h1>
           <div className="user-info">
             <span className="welcome-text">
-              Welcome, {user?.role + " " + user?.staffName || "staff"}!
+              안녕하세요 {user?.role + " " + user?.staffName || "staff"}!
             </span>
             <button onClick={handleLogout} className="logout-btn staff-logout">
               Logout

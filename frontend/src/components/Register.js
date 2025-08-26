@@ -10,7 +10,7 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    carPlate: "",
+    carPlateNo: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
@@ -49,7 +49,7 @@ const Register = () => {
           lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
-          carPlate: formData.carPlate || null,
+          carPlateNo: formData.carPlateNo,
         }),
       });
 
@@ -65,7 +65,7 @@ const Register = () => {
       navigate("/home");
     } catch (error) {
       console.error("Registration failed:", error);
-      setErrMsg("Registration failed. Please try again.");
+      setErrMsg(error.message || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -116,12 +116,12 @@ const Register = () => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="carPlate">Car Plate Number (Optional)</label>
+            <label htmlFor="carPlateNo">Car Plate Number (Optional)</label>
             <input
               type="text"
-              id="carPlate"
-              name="carPlate"
-              value={formData.carPlate}
+              id="carPlateNo"
+              name="carPlateNo"
+              value={formData.carPlateNo}
               onChange={handleChange}
               className="form-input"
               placeholder="Enter your car plate number"
@@ -153,6 +153,18 @@ const Register = () => {
               placeholder="Confirm your password"
             />
           </div>
+          {errMsg && (
+            <div
+              className="error-message"
+              style={{
+                color: "red",
+                marginBottom: "15px",
+                textAlign: "center",
+              }}
+            >
+              {errMsg}
+            </div>
+          )}
           <button type="submit" className="auth-button" disabled={isLoading}>
             {isLoading ? "Registering..." : "Register"}
           </button>

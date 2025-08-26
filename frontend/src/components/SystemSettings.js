@@ -56,9 +56,9 @@ const SystemSettings = () => {
     if (savedMachines) {
       const parsedMachines = JSON.parse(savedMachines);
       // Add barrierStatus to existing machines if it doesn't exist
-      const updatedMachines = parsedMachines.map(machine => ({
+      const updatedMachines = parsedMachines.map((machine) => ({
         ...machine,
-        barrierStatus: machine.barrierStatus || "down"
+        barrierStatus: machine.barrierStatus || "down",
       }));
       setMachines(updatedMachines);
       // Update localStorage with the new structure
@@ -255,8 +255,8 @@ const SystemSettings = () => {
   };
 
   const handleBarrierToggle = (machineId) => {
-    const machine = machines.find(m => m.id === machineId);
-    
+    const machine = machines.find((m) => m.id === machineId);
+
     // Only allow barrier control in manual mode
     if (machine.status !== "manual") {
       alert("Barrier can only be controlled when machine is in manual mode.");
@@ -269,7 +269,7 @@ const SystemSettings = () => {
     }
 
     const updatedMachines = machines.map((m) =>
-      m.id === machineId 
+      m.id === machineId
         ? { ...m, barrierStatus: m.barrierStatus === "up" ? "down" : "up" }
         : m
     );
@@ -337,7 +337,7 @@ const SystemSettings = () => {
           </div>
           <div className="user-info">
             <span className="welcome-text">
-              Staff: {user?.staffId || user?.email}
+              안녕하세요 {user?.role + " " + user?.staffName || "staff"}
             </span>
             <button onClick={logout} className="logout-btn">
               Logout
@@ -461,16 +461,29 @@ const SystemSettings = () => {
                             {getBarrierIcon(machine.barrierStatus)}
                           </span>
                           <span className="barrier-text">
-                            Barrier {machine.barrierStatus === "up" ? "UP" : "DOWN"}
+                            Barrier{" "}
+                            {machine.barrierStatus === "up" ? "UP" : "DOWN"}
                           </span>
                         </div>
                         <button
-                          className={`barrier-btn ${machine.barrierStatus === "up" ? "lower-barrier" : "raise-barrier"}`}
+                          className={`barrier-btn ${
+                            machine.barrierStatus === "up"
+                              ? "lower-barrier"
+                              : "raise-barrier"
+                          }`}
                           onClick={() => handleBarrierToggle(machine.id)}
-                          disabled={!machine.active || machine.status === "automatic"}
-                          title={machine.status === "automatic" ? "Barrier control only available in manual mode" : ""}
+                          disabled={
+                            !machine.active || machine.status === "automatic"
+                          }
+                          title={
+                            machine.status === "automatic"
+                              ? "Barrier control only available in manual mode"
+                              : ""
+                          }
                         >
-                          {machine.barrierStatus === "up" ? "⬇️ Lower Barrier" : "⬆️ Raise Barrier"}
+                          {machine.barrierStatus === "up"
+                            ? "⬇️ Lower Barrier"
+                            : "⬆️ Raise Barrier"}
                         </button>
                       </div>
                     </div>

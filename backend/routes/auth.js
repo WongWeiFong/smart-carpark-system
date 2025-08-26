@@ -8,6 +8,7 @@ const {
   PutCommand,
   GetCommand,
   ScanCommand,
+  DeleteCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
 const router = express.Router();
@@ -22,8 +23,9 @@ const client = new DynamoDBClient({
 });
 
 const ddb = DynamoDBDocumentClient.from(client);
-const USER_TABLE = "Users";
-const STAFFS_TABLE = "Staff";
+const USERS_TABLE = "Users";
+const STAFF_TABLE = "Staff";
+const VEHICLE_TABLE = "Vehicle";
 
 function signToken(payload) {
   return jwt.sign(payload, process.env.JWT_SECRET, {
@@ -35,13 +37,13 @@ function signToken(payload) {
 router.post("/signup", async (req, res) => {
   try {
     console.log("1. Signup route hit");
-    const { email, password, firstName, lastName, carPlate } = req.body || {};
+    const { email, password, firstName, lastName, carPlateNo } = req.body || {};
     console.log("2. Extracted signup data:", {
       email: email ? "present" : "missing",
       password: password ? "present" : "missing",
       firstName: firstName ? "present" : "missing",
       lastName: lastName ? "present" : "missing",
-      carPlate: carPlate ? "present" : "missing",
+      carPlateNo: carPlateNo ? "present" : "missing",
     });
 
     if (!email || !password)
@@ -51,7 +53,7 @@ router.post("/signup", async (req, res) => {
     //check if exists
     const existing = await ddb.send(
       new ScanCommand({
-        TableName: USER_TABLE,
+        TableName: USERS_TABLE,
         FilterExpression: "email = :email",
         ExpressionAttributeValues: {
           ":email": email,
@@ -66,6 +68,38 @@ router.post("/signup", async (req, res) => {
     if (existing.Items && existing.Items.length > 0)
       return res.status(409).json({ error: "Email already registered" });
 
+    // Vehicle validation if carPlateNo is provided
+    if (carPlateNo) {
+      console.log("4a. Car plate provided, validating vehicle:", carPlateNo);
+
+      try {
+        const vehicleCheck = await ddb.send(
+          new GetCommand({
+            TableName: VEHICLE_TABLE,
+            Key: { carPlateNo: carPlateNo },
+          })
+        );
+
+        console.log(
+          "4b. Vehicle check completed, vehicle exists:",
+          !!vehicleCheck.Item
+        );
+
+        if (vehicleCheck.Item) {
+          console.log("4c. Vehicle already exists in database");
+          return res.status(409).json({
+            error:
+              "This vehicle plate number is already registered in the system",
+          });
+        }
+
+        console.log("4d. Vehicle plate number is available for registration");
+      } catch (vehicleError) {
+        console.error("4e. Error checking vehicle:", vehicleError);
+        return res.status(500).json({ error: "Vehicle validation failed" });
+      }
+    }
+
     console.log("5. About to hash password");
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log("6. Password hashed successfully");
@@ -79,7 +113,7 @@ router.post("/signup", async (req, res) => {
       email,
       firstName: firstName || null,
       lastName: lastName || null,
-      carPlate: carPlate || null,
+      carPlateNo: carPlateNo || null,
       password: hashedPassword, // Using 'password' as per your schema
       walletBalance: 0, // Initialize wallet balance
       role: "user", // Add role field to DynamoDB schema
@@ -91,12 +125,57 @@ router.post("/signup", async (req, res) => {
 
     await ddb.send(
       new PutCommand({
-        TableName: USER_TABLE,
+        TableName: USERS_TABLE,
         Item: userItem,
         ConditionExpression: "attribute_not_exists(userID)", // Check userID doesn't exist
       })
     );
     console.log("9. User created successfully in DynamoDB");
+
+    // Handle vehicle record if carPlateNo is provided
+    if (carPlateNo) {
+      console.log("9a. Creating vehicle record for new user");
+
+      try {
+        const vehicleItem = {
+          carPlateNo: carPlateNo, // Partition key
+          userID: userID,
+          registeredAt: new Date().toISOString(),
+        };
+
+        await ddb.send(
+          new PutCommand({
+            TableName: VEHICLE_TABLE,
+            Item: vehicleItem,
+            ConditionExpression: "attribute_not_exists(carPlateNo)", // Ensure no duplicate carPlateNo
+          })
+        );
+
+        console.log("9b. Vehicle record created successfully");
+      } catch (vehicleError) {
+        console.error("9c. Error creating vehicle record:", vehicleError);
+
+        // If vehicle creation fails, we should clean up the user record
+        // since we promised the vehicle would be registered
+        try {
+          await ddb.send(
+            new DeleteCommand({
+              TableName: USERS_TABLE,
+              Key: { userID: userID },
+            })
+          );
+          console.log(
+            "9d. Cleaned up user record due to vehicle creation failure"
+          );
+        } catch (cleanupError) {
+          console.error("9e. Failed to cleanup user record:", cleanupError);
+        }
+
+        return res.status(500).json({
+          error: "Failed to register vehicle. Please try again.",
+        });
+      }
+    }
 
     console.log("10. About to sign token");
     const token = signToken({ sub: userID, email, role: "user" });
@@ -110,7 +189,7 @@ router.post("/signup", async (req, res) => {
         email,
         firstName: firstName || null,
         lastName: lastName || null,
-        carPlate: carPlate || null,
+        carPlateNo: carPlateNo || null,
         role: "user",
         walletBalance: 0,
       },
@@ -138,7 +217,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ error: "email and password required" });
 
     console.log("3. About to query DynamoDB for user");
-    console.log("3a. Table name:", USER_TABLE);
+    console.log("3a. Table name:", USERS_TABLE);
     console.log("3b. Query email:", email);
     console.log("3c. AWS Region:", process.env.AWS_REGION);
     console.log(
@@ -149,7 +228,7 @@ router.post("/login", async (req, res) => {
     // Use Scan instead of Get since email might not be the primary key
     const out = await ddb.send(
       new ScanCommand({
-        TableName: USER_TABLE,
+        TableName: USERS_TABLE,
         FilterExpression: "email = :email",
         ExpressionAttributeValues: {
           ":email": email,
@@ -185,7 +264,7 @@ router.post("/login", async (req, res) => {
         email: user.email,
         firstName: user.firstName || null,
         lastName: user.lastName || null,
-        carPlate: user.carPlate || null,
+        carPlateNo: user.carPlateNo || null,
         walletBalance: user.walletBalance || 0,
         role: user.role,
       },
@@ -197,9 +276,11 @@ router.post("/login", async (req, res) => {
   }
 });
 
+//STAFF LOGIN
+//POST /api/auth/stafflogin
 router.post("/stafflogin", async (req, res) => {
   try {
-    console.log("1. Login route hit");
+    console.log("1. Staff login route hit");
     const { staffID, password } = req.body || {};
     console.log("2. Extracted staffID and password:", {
       staffID: staffID ? "present" : "missing",
@@ -209,19 +290,14 @@ router.post("/stafflogin", async (req, res) => {
     if (!staffID || !password)
       return res.status(400).json({ error: "staffID and password required" });
 
-    console.log("3. About to query DynamoDB for user");
-    console.log("3a. Table name:", STAFFS_TABLE);
+    console.log("3. About to query DynamoDB for staff user");
+    console.log("3a. Table name:", STAFF_TABLE);
     console.log("3b. Query staffID:", staffID);
-    console.log("3c. AWS Region:", process.env.AWS_REGION);
-    console.log(
-      "3d. AWS Access Key ID:",
-      process.env.AWS_ACCESS_KEY_ID ? "present" : "missing"
-    );
 
-    // Use Scan instead of Get since email might not be the primary key
+    // Use Scan to find user by email
     const out = await ddb.send(
       new ScanCommand({
-        TableName: STAFFS_TABLE,
+        TableName: STAFF_TABLE,
         FilterExpression: "staffID = :staffID",
         ExpressionAttributeValues: {
           ":staffID": staffID,
@@ -236,77 +312,28 @@ router.post("/stafflogin", async (req, res) => {
     const user = out.Items && out.Items.length > 0 ? out.Items[0] : null;
     if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
-    console.log("5. About to compare password");
-    const ok = await bcrypt.compare(password, user.password); // Using 'password' field as per your schema
-    console.log("6. Password comparison result:", ok);
-    if (!ok) return res.status(401).json({ error: "Invalid credentials" });
-
-    console.log("7. About to sign token");
-    const token = signToken({
-      sub: user.staffID, // Using staffID as per your schema
-      role: user.role,
+    console.log("4a. Full user object keys:", Object.keys(user));
+    console.log("4b. User object (password hidden):", {
+      ...user,
+      password: "[HIDDEN]",
     });
-    console.log("8. Token signed successfully");
-
-    console.log("9. Sending response");
-    res.json({
-      token,
-      user: {
-        staffID: user.staffID,
-        role: user.role,
-      },
-    });
-    console.log("10. Response sent successfully");
-  } catch (err) {
-    console.log("login error:", err);
-    res.status(500).json({ error: "Login failed again" });
-  }
-});
-
-//STAFF LOGIN
-//POST /api/auth/stafflogin
-router.post("/stafflogin", async (req, res) => {
-  try {
-    console.log("1. Staff login route hit");
-    const { email, password } = req.body || {};
-    console.log("2. Extracted email and password:", {
-      email: email ? "present" : "missing",
-      password: password ? "present" : "missing",
-    });
-
-    if (!email || !password)
-      return res.status(400).json({ error: "email and password required" });
-
-    console.log("3. About to query DynamoDB for staff user");
-    console.log("3a. Table name:", USERS_TABLE);
-    console.log("3b. Query email:", email);
-
-    // Use Scan to find user by email
-    const out = await ddb.send(
-      new ScanCommand({
-        TableName: USERS_TABLE,
-        FilterExpression: "email = :email",
-        ExpressionAttributeValues: {
-          ":email": email,
-        },
-      })
-    );
-    console.log(
-      "4. DynamoDB scan completed, items found:",
-      out.Items?.length || 0
-    );
-
-    const user = out.Items && out.Items.length > 0 ? out.Items[0] : null;
-    if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
     console.log("5. User found, checking role:", user.role);
-    // Check if user has staff role
-    if (user.role !== "staff" && user.role !== "admin") {
-      console.log("6. Access denied - not staff/admin");
+    console.log("5a. Role type:", typeof user.role);
+    console.log("5b. Role exact value:", JSON.stringify(user.role));
+
+    // Check if user has staff role (case-insensitive)
+    const userRole = (user.role || "").toLowerCase();
+    console.log("5c. Normalized role:", userRole);
+
+    if (userRole !== "staff" && userRole !== "admin") {
+      console.log("6. Access denied - not staff/admin, found role:", userRole);
       return res
         .status(403)
         .json({ error: "Access denied. Staff credentials required." });
     }
+
+    console.log("6. Role check passed for:", userRole);
 
     console.log("7. About to compare password");
     const ok = await bcrypt.compare(password, user.password);
@@ -315,7 +342,7 @@ router.post("/stafflogin", async (req, res) => {
 
     console.log("9. About to sign token");
     const token = signToken({
-      sub: user.userID,
+      sub: user.staffID || user.userID, // Use staffID if available, fallback to userID
       email: user.email,
       role: user.role,
     });
@@ -325,12 +352,11 @@ router.post("/stafflogin", async (req, res) => {
     res.json({
       token,
       user: {
-        userID: user.userID,
-        email: user.email,
-        firstName: user.firstName || null,
-        lastName: user.lastName || null,
-        carPlate: user.carPlate || null,
+        staffID: user.staffID,
+        staffName: user.staffName || "",
+        password: user.password || "",
         walletBalance: user.walletBalance || 0,
+        status: user.status || "active",
         role: user.role,
       },
     });

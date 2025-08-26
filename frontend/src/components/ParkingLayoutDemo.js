@@ -18,7 +18,7 @@ const ParkingLayoutDemo = () => {
       let status = 'available';
       
       if (random > 0.8) status = 'occupied';
-      else if (random > 0.75) status = 'reserved';
+      // else if (random > 0.75) status = 'reserved';
       else if (random > 0.73) status = 'maintenance';
       
       mockSlots.push({
