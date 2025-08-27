@@ -133,6 +133,23 @@ const StaffHomepage = () => {
           </div>
 
           <div className="dashboard-card staff-card">
+            <div className="card-icon">👤</div>
+            <h3>Staff Profile</h3>
+            <p>Manage your staff profile and account settings</p>
+            <Link
+              to="/staff-settings"
+              className="card-button staff-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              My Profile
+            </Link>
+          </div>
+
+          <div className="dashboard-card staff-card">
             <div className="card-icon">🚨</div>
             <h3>Emergency Management</h3>
             <p>Handle emergency situations and incidents</p>

@@ -27,6 +27,8 @@ import RevenueManagement from "./components/RevenueManagement";
 import CustomerManagement from "./components/CustomerManagement";
 import AnalyticsReports from "./components/AnalyticsReports";
 import SystemSettings from "./components/SystemSettings";
+import UserSettings from "./components/UserSettings";
+import StaffSettings from "./components/StaffSettings";
 import EmergencyManagement from "./components/EmergencyManagement";
 import "./App.css";
 
@@ -220,6 +222,22 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <SystemSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user-settings"
+          element={
+            <ProtectedRoute>
+              <UserSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff-settings"
+          element={
+            <ProtectedRoute>
+              <StaffSettings />
             </ProtectedRoute>
           }
         />

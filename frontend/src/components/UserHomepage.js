@@ -97,7 +97,17 @@ const UserHomepage = () => {
             <div className="card-icon">⚙️</div>
             <h3>Settings</h3>
             <p>Manage your account settings and preferences</p>
-            <button className="card-button">Settings</button>
+            <Link
+              to="/user-settings"
+              className="card-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              Settings
+            </Link>
           </div>
 
           <div className="dashboard-card">

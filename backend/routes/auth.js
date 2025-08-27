@@ -367,4 +367,240 @@ router.post("/stafflogin", async (req, res) => {
   }
 });
 
+// GET USER PROFILE
+// GET /api/auth/profile
+router.get("/profile", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.sub;
+
+    console.log("Getting profile for user:", userId);
+
+    const userResult = await ddb.send(
+      new GetCommand({
+        TableName: USERS_TABLE,
+        Key: { userID: userId },
+      })
+    );
+
+    if (!userResult.Item) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = userResult.Item;
+    res.json({
+      userID: user.userID,
+      email: user.email,
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      carPlateNo: user.carPlateNo || "",
+      role: user.role || "user",
+      walletBalance: user.walletBalance || 0,
+    });
+  } catch (error) {
+    console.error("Get profile error:", error);
+    res.status(500).json({ error: "Failed to get profile" });
+  }
+});
+
+// UPDATE USER PROFILE
+// PUT /api/auth/profile
+router.put("/profile", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.sub;
+
+    const { firstName, lastName, email, password } = req.body;
+
+    console.log("Updating profile for user:", userId);
+
+    // Get current user data
+    const userResult = await ddb.send(
+      new GetCommand({
+        TableName: USERS_TABLE,
+        Key: { userID: userId },
+      })
+    );
+
+    if (!userResult.Item) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Email validation if email is being updated
+    if (email !== undefined && email !== userResult.Item.email) {
+      console.log("Email is being changed, validating uniqueness:", email);
+
+      // Check if email exists for another user
+      const emailCheck = await ddb.send(
+        new ScanCommand({
+          TableName: USERS_TABLE,
+          FilterExpression: "email = :email AND userID <> :currentUserId",
+          ExpressionAttributeValues: {
+            ":email": email,
+            ":currentUserId": userId,
+          },
+        })
+      );
+
+      if (emailCheck.Items && emailCheck.Items.length > 0) {
+        console.log("Email already exists for another user");
+        return res.status(409).json({
+          error: "This email is already registered to another user",
+        });
+      }
+
+      console.log("Email validation passed, email is available");
+    }
+
+    // Prepare update data
+    const updateData = {
+      userID: userId,
+      ...userResult.Item, // Keep existing data
+    };
+
+    // Update only provided fields
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (email !== undefined) updateData.email = email;
+
+    // Hash password if provided
+    if (password && password.trim() !== "") {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    await ddb.send(
+      new PutCommand({
+        TableName: USERS_TABLE,
+        Item: updateData,
+      })
+    );
+
+    // Return updated user data (excluding password)
+    const { password: _, ...userResponse } = updateData;
+    res.json({
+      message: "Profile updated successfully",
+      user: userResponse,
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
+// GET STAFF PROFILE
+// GET /api/auth/staff-profile
+router.get("/staff-profile", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const staffId = decoded.sub;
+
+    console.log("Getting staff profile for:", staffId);
+
+    const staffResult = await ddb.send(
+      new GetCommand({
+        TableName: STAFF_TABLE,
+        Key: { staffID: staffId },
+      })
+    );
+
+    if (!staffResult.Item) {
+      return res.status(404).json({ error: "Staff member not found" });
+    }
+
+    const staff = staffResult.Item;
+    res.json({
+      staffID: staff.staffID,
+      staffName: staff.staffName || "",
+      role: staff.role || "staff",
+      status: staff.status || "active",
+      walletBalance: staff.walletBalance || 0,
+    });
+  } catch (error) {
+    console.error("Get staff profile error:", error);
+    res.status(500).json({ error: "Failed to get staff profile" });
+  }
+});
+
+// UPDATE STAFF PROFILE
+// PUT /api/auth/staff-profile
+router.put("/staff-profile", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const staffId = decoded.sub;
+
+    const { staffName, password, walletBalance } = req.body;
+
+    console.log("Updating staff profile for:", staffId);
+
+    // Get current staff data
+    const staffResult = await ddb.send(
+      new GetCommand({
+        TableName: STAFF_TABLE,
+        Key: { staffID: staffId },
+      })
+    );
+
+    if (!staffResult.Item) {
+      return res.status(404).json({ error: "Staff member not found" });
+    }
+
+    // Prepare update data
+    const updateData = {
+      staffID: staffId,
+      ...staffResult.Item, // Keep existing data
+    };
+
+    // Update only provided fields
+    if (staffName !== undefined) updateData.staffName = staffName;
+    if (walletBalance !== undefined)
+      updateData.walletBalance = parseFloat(walletBalance);
+
+    // Hash password if provided
+    if (password && password.trim() !== "") {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    await ddb.send(
+      new PutCommand({
+        TableName: STAFF_TABLE,
+        Item: updateData,
+      })
+    );
+
+    // Return updated staff data (excluding password)
+    const { password: _, ...staffResponse } = updateData;
+    res.json({
+      message: "Staff profile updated successfully",
+      staff: staffResponse,
+    });
+  } catch (error) {
+    console.error("Update staff profile error:", error);
+    res.status(500).json({ error: "Failed to update staff profile" });
+  }
+});
+
 module.exports = router;
