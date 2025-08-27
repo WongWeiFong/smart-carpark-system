@@ -17,11 +17,11 @@ import CarList from "./components/CarList";
 import CarDetails from "./components/CarDetails";
 import AddCar from "./components/AddCar";
 import ParkingHistory from "./components/ParkingHistory";
-import ParkingSlot from "./components/ParkingSlot";
-import EnhancedParkingSlot from "./components/EnhancedParkingSlot";
-import ParkingLayoutDemo from "./components/ParkingLayoutDemo";
-import StaffParkingSlotManagement from "./components/StaffParkingSlotManagement";
-import ParkingManagement from "./components/ParkingManagement";
+// import ParkingSlot from "./components/ParkingSlot";
+// import EnhancedParkingSlot from "./components/EnhancedParkingSlot";                  //view from cars details
+import ParkingLayoutDemo from "./components/ParkingLayoutDemo"; //edit car plate for self view
+import StaffParkingSlotManagement from "./components/StaffParkingSlotManagement"; //staff edit parking sensor status
+// import ParkingManagement from "./components/ParkingManagement";                      //self edit car everything
 import PaymentHistory from "./components/PaymentHistory";
 import RevenueManagement from "./components/RevenueManagement";
 import CustomerManagement from "./components/CustomerManagement";
@@ -145,22 +145,22 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/cars/:carId/parking-slot"
           element={
             <ProtectedRoute>
               <EnhancedParkingSlot />
             </ProtectedRoute>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/cars/:carId/parking-slot-old"
           element={
             <ProtectedRoute>
               <ParkingSlot />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/parking-demo"
           element={
@@ -177,14 +177,14 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/parking"
           element={
             <ProtectedRoute>
               <ParkingManagement />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/payment-history"
           element={

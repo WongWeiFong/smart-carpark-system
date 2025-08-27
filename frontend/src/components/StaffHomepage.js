@@ -168,8 +168,8 @@ const StaffHomepage = () => {
 
           <div className="dashboard-card staff-card demo-card">
             <div className="card-icon">🎯</div>
-            <h3>Interactive Layout Demo</h3>
-            <p>Experience the new Konva.js interactive parking layout</p>
+            <h3>Manage User's Current Parking</h3>
+            <p>View and edit user's current parking location</p>
             <Link
               to="/parking-demo"
               className="card-button demo-button"
@@ -179,7 +179,7 @@ const StaffHomepage = () => {
                 textAlign: "center",
               }}
             >
-              Try Demo
+              Manage Parking v2
             </Link>
           </div>
         </div>

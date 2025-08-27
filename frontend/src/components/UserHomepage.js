@@ -52,19 +52,19 @@ const UserHomepage = () => {
             <button className="card-button">Search Now</button>
           </div>
 
-          <div className="dashboard-card">
+          <div className="dashboard-card booking-card">
             <div className="card-icon">🎫</div>
             <h3>My Bookings</h3>
             <p>View and manage your parking reservations</p>
             <button className="card-button">View Bookings</button>
           </div>
 
-          <div className="dashboard-card">
+          {/* <div className="dashboard-card">
             <div className="card-icon">📍</div>
             <h3>Current Parking</h3>
             <p>View all your cars with parking slots and manage them</p>
             <Link
-              to="/parking"
+              to="/parking-demo"
               className="card-button"
               style={{
                 textDecoration: "none",
@@ -73,6 +73,23 @@ const UserHomepage = () => {
               }}
             >
               Manage Parking
+            </Link>
+          </div> */}
+
+          <div className="dashboard-card demo-card">
+            <div className="card-icon">📍</div>
+            <h3>Current Parking - new</h3>
+            <p>View all your cars with parking slots and manage them - v2</p>
+            <Link
+              to="/parking-demo"
+              className="card-button demo-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              Manage Parking - new
             </Link>
           </div>
 
@@ -115,26 +132,6 @@ const UserHomepage = () => {
             <h3>Help & Support</h3>
             <p>Get help with parking issues or contact support</p>
             <button className="card-button">Get Help</button>
-          </div>
-
-          <div className="dashboard-card demo-card">
-            <div className="card-icon">🎯</div>
-            <h3>Interactive Layout Demo</h3>
-            <p>
-              Experience the new Konva.js parking layout with zoom, pan & click
-              features
-            </p>
-            <Link
-              to="/parking-demo"
-              className="card-button demo-button"
-              style={{
-                textDecoration: "none",
-                display: "block",
-                textAlign: "center",
-              }}
-            >
-              Try Demo
-            </Link>
           </div>
         </div>
       </main>

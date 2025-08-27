@@ -276,7 +276,8 @@ const CarDetails = () => {
                   </Link>
 
                   <Link
-                    to={`/cars/${carId}/parking-slot`}
+                    // to={`/cars/${carId}/parking-demo`}
+                    to={`/parking-demo`}
                     className="quick-action-button slot-button"
                   >
                     <span className="action-icon">🅿️</span>

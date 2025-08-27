@@ -191,36 +191,36 @@
     gap: 15px;
     text-align: center;
   }
-  
+
   .homepage-title {
     font-size: 24px;
   }
-  
+
   .user-info {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .homepage-main {
     padding: 20px 15px;
   }
-  
+
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .stats-section {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .stat-card {
     padding: 20px;
   }
-  
+
   .stat-number {
     font-size: 28px;
   }
-  
+
   .dashboard-card {
     padding: 25px;
   }
@@ -230,11 +230,11 @@
   .stats-section {
     grid-template-columns: 1fr;
   }
-  
+
   .dashboard-card {
     padding: 20px;
   }
-  
+
   .card-icon {
     font-size: 40px;
   }
@@ -275,4 +275,18 @@
 .demo-button:hover {
   background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
   transform: translateY(-2px);
-} 
+}
+
+.booking-card::before {
+  content: "COMING SOON";
+  position: absolute;
+  top: 10px;
+  right: -25px;
+  background: linear-gradient(45deg, #ff4081, #e91e63);
+  color: white;
+  padding: 5px 30px;
+  font-size: 11px;
+  font-weight: bold;
+  transform: rotate(45deg);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
