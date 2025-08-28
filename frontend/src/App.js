@@ -17,7 +17,7 @@ import CarList from "./components/CarList";
 import CarDetails from "./components/CarDetails";
 import AddCar from "./components/AddCar";
 import ParkingHistory from "./components/ParkingHistory";
-// import ParkingSlot from "./components/ParkingSlot";
+import ParkingSlot from "./components/ParkingSlot";
 // import EnhancedParkingSlot from "./components/EnhancedParkingSlot";                  //view from cars details
 import ParkingLayoutDemo from "./components/ParkingLayoutDemo"; //edit car plate for self view
 import StaffParkingSlotManagement from "./components/StaffParkingSlotManagement"; //staff edit parking sensor status
@@ -153,16 +153,16 @@ function AppContent() {
             </ProtectedRoute>
           }
         /> */}
-        {/* <Route
-          path="/cars/:carId/parking-slot-old"
+        <Route
+          path="/parking-slot"
           element={
             <ProtectedRoute>
               <ParkingSlot />
             </ProtectedRoute>
           }
-        /> */}
+        />
         <Route
-          path="/parking-demo"
+          path="/parking"
           element={
             <ProtectedRoute>
               <ParkingLayoutDemo />

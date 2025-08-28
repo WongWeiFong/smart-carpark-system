@@ -392,8 +392,8 @@
 }
 
 .legend-color.current {
-  background: #28a745;
-  border-color: #28a745;
+  background: #cfc61f;
+  border-color: #cfc61f;
 }
 
 .legend-color.selected {
@@ -479,9 +479,9 @@
 }
 
 .parking-slot.current {
-  background: #28a745;
+  background: #cfc61f;
   color: white;
-  border-color: #28a745;
+  border-color: #cfc61f;
 }
 
 .parking-slot.selected {

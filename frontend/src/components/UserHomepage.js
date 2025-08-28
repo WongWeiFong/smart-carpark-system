@@ -30,7 +30,7 @@ const UserHomepage = () => {
         <div className="dashboard-grid">
           <div className="dashboard-card">
             <div className="card-icon">🚗</div>
-            <h3>My Car(s)</h3>
+            <h3>My Car</h3>
             <p>Add your car plate number for auto deduction</p>
             <Link
               to="/cars"
@@ -41,7 +41,7 @@ const UserHomepage = () => {
                 textAlign: "center",
               }}
             >
-              View Cars
+              View Car
             </Link>
           </div>
 
@@ -49,23 +49,26 @@ const UserHomepage = () => {
             <div className="card-icon">🅿️</div>
             <h3>Find Parking</h3>
             <p>Search for available parking spots near your location</p>
-            <button className="card-button">Search Now</button>
+            <Link
+              to="/parking-slot"
+              className="card-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              Search Now
+            </Link>
           </div>
 
-          <div className="dashboard-card">
-            <div className="card-icon">🎫</div>
-            <h3>My Bookings</h3>
-            <p>View and manage your parking reservations</p>
-            <button className="card-button">View Bookings</button>
-          </div>
-
-          <div className="dashboard-card">
+          <div className="dashboard-card demo-card">
             <div className="card-icon">📍</div>
             <h3>Current Parking</h3>
-            <p>View all your cars with parking slots and manage them</p>
+            <p>View your car with parking slots and manage it</p>
             <Link
               to="/parking"
-              className="card-button"
+              className="card-button demo-button"
               style={{
                 textDecoration: "none",
                 display: "block",
@@ -94,10 +97,27 @@ const UserHomepage = () => {
           </div>
 
           <div className="dashboard-card">
+            <div className="card-icon">🎫</div>
+            <h3>My Bookings</h3>
+            <p>View and manage your parking reservations</p>
+            <button className="card-button">View Bookings</button>
+          </div>
+
+          <div className="dashboard-card">
             <div className="card-icon">⚙️</div>
             <h3>Settings</h3>
             <p>Manage your account settings and preferences</p>
-            <button className="card-button">Settings</button>
+            <Link
+              to="/user-settings"
+              className="card-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              Settings
+            </Link>
           </div>
 
           <div className="dashboard-card">
@@ -105,26 +125,6 @@ const UserHomepage = () => {
             <h3>Help & Support</h3>
             <p>Get help with parking issues or contact support</p>
             <button className="card-button">Get Help</button>
-          </div>
-
-          <div className="dashboard-card demo-card">
-            <div className="card-icon">🎯</div>
-            <h3>Interactive Layout Demo</h3>
-            <p>
-              Experience the new Konva.js parking layout with zoom, pan & click
-              features
-            </p>
-            <Link
-              to="/parking-demo"
-              className="card-button demo-button"
-              style={{
-                textDecoration: "none",
-                display: "block",
-                textAlign: "center",
-              }}
-            >
-              Try Demo
-            </Link>
           </div>
         </div>
       </main>

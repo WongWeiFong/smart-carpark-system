@@ -64,6 +64,39 @@ const StaffHomepage = () => {
             </Link>
           </div>
 
+          <div className="dashboard-card staff-card demo-card">
+            <div className="card-icon">🎯</div>
+            <h3>Manage user's parking</h3>
+            <p>View and manage customer's vehicle current parking slot</p>
+            <Link
+              to="/parking"
+              className="card-button demo-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              Manage Parking
+            </Link>
+          </div>
+          <div className="dashboard-card staff-card">
+            <div className="card-icon">🎯</div>
+            <h3>Staff Settings</h3>
+            <p>Manage staff accounts and permissions</p>
+            <Link
+              to="/staff-settings"
+              className="card-button staff-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              Manage Settings
+            </Link>
+          </div>
+
           <div className="dashboard-card staff-card">
             <div className="card-icon">👥</div>
             <h3>Customer Management</h3>
@@ -146,39 +179,6 @@ const StaffHomepage = () => {
               }}
             >
               Emergency
-            </Link>
-          </div>
-
-          <div className="dashboard-card staff-card demo-card">
-            <div className="card-icon">🎯</div>
-            <h3>Interactive Layout Demo</h3>
-            <p>Experience the new Konva.js interactive parking layout</p>
-            <Link
-              to="/parking-demo"
-              className="card-button demo-button"
-              style={{
-                textDecoration: "none",
-                display: "block",
-                textAlign: "center",
-              }}
-            >
-              Try Demo
-            </Link>
-          </div>
-          <div className="dashboard-card staff-card">
-            <div className="card-icon">🎯</div>
-            <h3>Staff Settings</h3>
-            <p>Manage staff accounts and permissions</p>
-            <Link
-              to="/staff-settings"
-              className="card-button demo-button"
-              style={{
-                textDecoration: "none",
-                display: "block",
-                textAlign: "center",
-              }}
-            >
-              Settings
             </Link>
           </div>
         </div>
