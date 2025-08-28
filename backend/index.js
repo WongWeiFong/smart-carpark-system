@@ -52,6 +52,9 @@ app.get("/api/test", (_req, res) => {
 // Mount auth router at a RELATIVE path (not a full URL)
 app.use("/api/auth", require("./routes/auth"));
 
+// Mount parking router
+app.use("/api/parking", require("./routes/parking"));
+
 // Example protected endpoint: token echo
 app.get("/api/me", auth(), async (req, res) => {
   res.json({ me: req.user });

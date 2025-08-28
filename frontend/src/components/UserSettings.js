@@ -197,7 +197,7 @@ const UserSettings = () => {
             <div>
               <strong>Wallet Balance</strong>
               <p style={{ margin: "5px 0", color: "#666" }}>
-                ${profile.walletBalance.toFixed(2)}
+                ${Number(profile.walletBalance || 0).toFixed(2)}
               </p>
             </div>
             <div>
@@ -205,31 +205,6 @@ const UserSettings = () => {
               <p style={{ margin: "5px 0", color: "#666" }}>{profile.email}</p>
             </div>
           </div>
-        </div>
-
-        {/* Top buttons */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "20px",
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleBack}
-            className="auth-button"
-            style={{ backgroundColor: "#6c757d" }}
-          >
-            Back
-          </button>
-          <button
-            onClick={handleLogout}
-            className="auth-button"
-            style={{ backgroundColor: "#dc3545" }}
-          >
-            Logout
-          </button>
         </div>
 
         {/* Editable form */}
@@ -293,7 +268,13 @@ const UserSettings = () => {
             <div style={{ textAlign: "center" }}>{message}</div>
           </div>
 
-          <div style={{ display: "flex" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "20px",
+            }}
+          >
             <button type="submit" className="auth-button" disabled={loading}>
               {loading ? "Updating..." : "Update Profile"}
             </button>

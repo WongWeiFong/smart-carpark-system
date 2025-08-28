@@ -133,23 +133,6 @@ const StaffHomepage = () => {
           </div>
 
           <div className="dashboard-card staff-card">
-            <div className="card-icon">👤</div>
-            <h3>Staff Profile</h3>
-            <p>Manage your staff profile and account settings</p>
-            <Link
-              to="/staff-settings"
-              className="card-button staff-button"
-              style={{
-                textDecoration: "none",
-                display: "block",
-                textAlign: "center",
-              }}
-            >
-              My Profile
-            </Link>
-          </div>
-
-          <div className="dashboard-card staff-card">
             <div className="card-icon">🚨</div>
             <h3>Emergency Management</h3>
             <p>Handle emergency situations and incidents</p>
@@ -168,8 +151,8 @@ const StaffHomepage = () => {
 
           <div className="dashboard-card staff-card demo-card">
             <div className="card-icon">🎯</div>
-            <h3>Manage User's Current Parking</h3>
-            <p>View and edit user's current parking location</p>
+            <h3>Interactive Layout Demo</h3>
+            <p>Experience the new Konva.js interactive parking layout</p>
             <Link
               to="/parking-demo"
               className="card-button demo-button"
@@ -179,7 +162,23 @@ const StaffHomepage = () => {
                 textAlign: "center",
               }}
             >
-              Manage Parking v2
+              Try Demo
+            </Link>
+          </div>
+          <div className="dashboard-card staff-card">
+            <div className="card-icon">🎯</div>
+            <h3>Staff Settings</h3>
+            <p>Manage staff accounts and permissions</p>
+            <Link
+              to="/staff-settings"
+              className="card-button demo-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              Settings
             </Link>
           </div>
         </div>

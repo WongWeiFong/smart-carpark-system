@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Stage, Layer, Rect, Text, Group, Circle, Line } from "react-konva";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { Stage, Layer, Rect, Text, Group, Line } from "react-konva";
 import "./ParkingLayoutCanvas.css";
 
 const ParkingLayoutCanvas = ({
-  slots = [],
+  slots = [], // expects [{ number: "E-4", status: "occupied", manualOverride?: true }]
   currentSlot = null,
   selectedSlot = null,
   onSlotClick = () => {},
@@ -24,7 +24,24 @@ const ParkingLayoutCanvas = ({
   const stageRef = useRef();
   const containerRef = useRef();
 
-  // Make canvas responsive to container
+  // Normalize and index incoming slots for fast lookup
+  const slotIndex = useMemo(() => {
+    const map = new Map();
+    (slots || []).forEach((s) => {
+      // Allow both shapes:
+      // 1) { number: "E-4", status: "occupied" }
+      // 2) { section: "E", number: 4, status: "occupied" }  (will normalize)
+      const id =
+        typeof s.number === "string" ? s.number : `${s.section}-${s.number}`;
+      map.set(id, {
+        status: s.effectiveStatus || s.status || "available",
+        manualOverride: !!s.manualOverride,
+      });
+    });
+    return map;
+  }, [slots]);
+
+  // Responsive canvas
   useEffect(() => {
     const updateCanvasSize = () => {
       if (containerRef.current) {
@@ -34,18 +51,17 @@ const ParkingLayoutCanvas = ({
 
         setCanvasSize({
           width: containerWidth,
-          height: Math.min(newHeight, 650), // Max height limit
+          height: Math.min(newHeight, 650),
         });
       }
     };
 
     updateCanvasSize();
     window.addEventListener("resize", updateCanvasSize);
-
     return () => window.removeEventListener("resize", updateCanvasSize);
   }, [width, height]);
 
-  // Parking sections configuration
+  // Sections layout (your plan)
   const sections = [
     {
       id: "C",
@@ -59,7 +75,7 @@ const ParkingLayoutCanvas = ({
       slotHeight: 40,
     },
     {
-      id: "ML",
+      id: "MW",
       name: "Mall West",
       x: 200,
       y: 380,
@@ -76,7 +92,7 @@ const ParkingLayoutCanvas = ({
       y: 380,
       rows: 1,
       cols: 1,
-      startNumber: 0,
+      startNumber: 1,
       slotWidth: 375,
       slotHeight: 84,
     },
@@ -137,39 +153,27 @@ const ParkingLayoutCanvas = ({
     },
   ];
 
-  // Slot dimensions
-  // const slotWidth = 30;
-  // const slotHeight = 40;
   const slotSpacing = 4;
 
-  // Get slot status
+  // Status / color logic
   const getSlotStatus = (sectionId, slotNumber) => {
     const uniqueSlotId = `${sectionId}-${slotNumber}`;
     if (currentSlot === uniqueSlotId) return "current";
     if (selectedSlot === uniqueSlotId) return "selected";
     if (showBulkActions && selectedSlots.has(uniqueSlotId))
       return "bulk-selected";
-    const slot = slots.find((s) => s.number === uniqueSlotId);
 
-    // Use effectiveStatus for sensor-based system, fallback to status for compatibility
-    const status = slot
-      ? slot.effectiveStatus || slot.status || "available"
-      : "available";
+    const slot = slotIndex.get(uniqueSlotId); // normalized lookup
+    const status = slot ? slot.status || "available" : "available";
 
-    // Add visual indicator for manual overrides in staff mode
-    if (staffMode && slot?.manualOverride) {
-      return status + "-override";
-    }
-
+    if (staffMode && slot?.manualOverride) return status + "-override";
     return status;
   };
 
-  // Get slot color based on status
   const getSlotColor = (status) => {
-    // Handle override statuses
     if (status.includes("-override")) {
-      const baseStatus = status.replace("-override", "");
-      switch (baseStatus) {
+      const base = status.replace("-override", "");
+      switch (base) {
         case "available":
           return "#e8f5e8";
         case "occupied":
@@ -180,31 +184,24 @@ const ParkingLayoutCanvas = ({
           return "#fff8dc";
       }
     }
-
     switch (status) {
       case "current":
-        return "#28a745";
+        return "#cfc61f";
       case "selected":
         return "#667eea";
       case "bulk-selected":
         return "#ff9500";
       case "occupied":
         return "#dc3545";
-      // case 'reserved': return '#ffc107';
       case "maintenance":
         return "#6c757d";
       default:
-        return "#f8f9fa";
+        return "#28a745"; // pure white for available
     }
   };
 
-  // Get slot border color
   const getSlotBorderColor = (status) => {
-    // Handle override statuses with special orange border
-    if (status.includes("-override")) {
-      return "#ff6b00"; // Orange border for manual overrides
-    }
-
+    if (status.includes("-override")) return "#ff6b00";
     switch (status) {
       case "current":
         return "#1e7e34";
@@ -214,7 +211,6 @@ const ParkingLayoutCanvas = ({
         return "#ff6b00";
       case "occupied":
         return "#c82333";
-      // case 'reserved': return '#e0a800';
       case "maintenance":
         return "#5a6268";
       default:
@@ -222,59 +218,48 @@ const ParkingLayoutCanvas = ({
     }
   };
 
-  // Handle slot click
+  // Interactions
   const handleSlotClick = (sectionId, slotNumber) => {
     const uniqueSlotId = `${sectionId}-${slotNumber}`;
     if (showBulkActions && staffMode) {
-      // In bulk mode, toggle slot selection
       onBulkSlotToggle(uniqueSlotId);
-    } else if (onSlotClick) {
+    } else {
       onSlotClick(uniqueSlotId);
     }
   };
 
-  // Handle slot hover
   const handleSlotHover = (sectionId, slotNumber, isHovering) => {
     const uniqueSlotId = `${sectionId}-${slotNumber}`;
-    if (onSlotHover) {
-      onSlotHover(uniqueSlotId, isHovering);
-    }
+    onSlotHover(uniqueSlotId, isHovering);
   };
 
-  // Handle wheel zoom
-  const handleWheel = (e) => {
-    e.evt.preventDefault();
+  // const handleWheel = (e) => {
+  //   e.evt.preventDefault();
+  //   const scaleBy = 1.02;
+  //   const stage = e.target.getStage();
+  //   const oldScale = stage.scaleX();
+  //   const pointer = stage.getPointerPosition();
 
-    const scaleBy = 1.02;
-    const stage = e.target.getStage();
-    const oldScale = stage.scaleX();
-    const mousePointTo = {
-      x: stage.getPointerPosition().x / oldScale - stage.x() / oldScale,
-      y: stage.getPointerPosition().y / oldScale - stage.y() / oldScale,
-    };
+  //   const mousePointTo = {
+  //     x: pointer.x / oldScale - stage.x() / oldScale,
+  //     y: pointer.y / oldScale - stage.y() / oldScale,
+  //   };
 
-    const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+  //   const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+  //   if (newScale < 0.5 || newScale > 3) return;
 
-    // Limit zoom levels
-    if (newScale < 0.5 || newScale > 3) return;
+  //   setStageScale(newScale);
+  //   setStageX(-(mousePointTo.x - pointer.x / newScale) * newScale);
+  //   setStageY(-(mousePointTo.y - pointer.y / newScale) * newScale);
+  // };
 
-    setStageScale(newScale);
-    setStageX(
-      -(mousePointTo.x - stage.getPointerPosition().x / newScale) * newScale
-    );
-    setStageY(
-      -(mousePointTo.y - stage.getPointerPosition().y / newScale) * newScale
-    );
-  };
+  // const resetView = () => {
+  //   setStageScale(1);
+  //   setStageX(0);
+  //   setStageY(0);
+  // };
 
-  // Reset zoom and position
-  const resetView = () => {
-    setStageScale(1);
-    setStageX(0);
-    setStageY(0);
-  };
-
-  // Render parking slot
+  // Rendering primitives
   const renderSlot = (sectionId, slotNumber, x, y, slotWidth, slotHeight) => {
     const status = getSlotStatus(sectionId, slotNumber);
     const color = getSlotColor(status);
@@ -297,13 +282,12 @@ const ParkingLayoutCanvas = ({
           listening={true}
         />
         <Text
-          x={slotWidth / 2}
-          y={slotHeight / 2}
-          text={slotNumber.toString()}
+          x={0}
+          y={0}
+          text={String(slotNumber)}
           fontSize={10}
           fontFamily="Arial"
           fill={"#333"}
-          // fill={status === "available" ? "#333" : "#fff"}
           width={slotWidth}
           height={slotHeight}
           align="center"
@@ -314,16 +298,15 @@ const ParkingLayoutCanvas = ({
     );
   };
 
-  // Render section
   const renderSection = (section) => {
-    const slots = [];
+    const nodes = [];
     let slotNumber = section.startNumber;
 
     for (let row = 0; row < section.rows; row++) {
       for (let col = 0; col < section.cols; col++) {
         const x = section.x + col * (section.slotWidth + slotSpacing);
         const y = section.y + row * (section.slotHeight + slotSpacing) + 30;
-        slots.push(
+        nodes.push(
           renderSlot(
             section.id,
             slotNumber,
@@ -351,8 +334,7 @@ const ParkingLayoutCanvas = ({
           cornerRadius={8}
           listening={false}
         />
-
-        {/* Section title */}
+        {/* Title */}
         <Text
           x={section.x}
           y={section.y + 10}
@@ -363,191 +345,153 @@ const ParkingLayoutCanvas = ({
           fill="#333"
           listening={false}
         />
-
         {/* Slots */}
-        {slots}
+        {nodes}
       </Group>
     );
   };
 
-  // Render entrance/exit
-  const renderEntranceExit = () => {
-    const renderArrow = (points, direction = "down") => {
-      const [startX, startY, endX, endY] = points;
-      const arrowLength = 15;
-      const arrowAngle = Math.PI / 6; // 30 degrees
-
-      // Calculate arrow direction
-      const angle = Math.atan2(endY - startY, endX - startX);
-
-      // Arrow head points
-      const arrowHead1X = endX - arrowLength * Math.cos(angle - arrowAngle);
-      const arrowHead1Y = endY - arrowLength * Math.sin(angle - arrowAngle);
-      const arrowHead2X = endX - arrowLength * Math.cos(angle + arrowAngle);
-      const arrowHead2Y = endY - arrowLength * Math.sin(angle + arrowAngle);
-      return (
-        <Group>
-          {/* Main line */}
-          <Line
-            points={points}
-            stroke="#666"
-            strokeWidth={4}
-            listening={false}
-          />
-          {/* Arrow head */}
-          <Line
-            points={[endX, endY, arrowHead1X, arrowHead1Y]}
-            stroke="#666"
-            strokeWidth={4}
-            listening={false}
-          />
-          <Line
-            points={[endX, endY, arrowHead2X, arrowHead2Y]}
-            stroke="#666"
-            strokeWidth={4}
-            listening={false}
-          />
-        </Group>
-      );
-    };
+  const renderArrow = (points) => {
+    const [startX, startY, endX, endY] = points;
+    const arrowLength = 15;
+    const arrowAngle = Math.PI / 6;
+    const angle = Math.atan2(endY - startY, endX - startX);
+    const ah1x = endX - arrowLength * Math.cos(angle - arrowAngle);
+    const ah1y = endY - arrowLength * Math.sin(angle - arrowAngle);
+    const ah2x = endX - arrowLength * Math.cos(angle + arrowAngle);
+    const ah2y = endY - arrowLength * Math.sin(angle + arrowAngle);
     return (
       <Group>
-        {/* Entry 1*/}
-        <Group x={width / 6 - 60} y={20}>
-          <Rect
-            width={80}
-            height={30}
-            fill="#667eea"
-            cornerRadius={15}
-            listening={false}
-          />
-          <Text
-            x={15}
-            y={10}
-            text="ENTRY 1"
-            fontSize={12}
-            fontFamily="Arial"
-            fontStyle="bold"
-            fill="white"
-            width={80}
-            align="left"
-            verticalAlign="middle"
-            listening={false}
-          />
-        </Group>
-
-        {/* Entry 2*/}
-        <Group x={width + 60} y={height / 2 + 250}>
-          <Rect
-            width={80}
-            height={30}
-            fill="#667eea"
-            cornerRadius={15}
-            listening={false}
-          />
-          <Text
-            x={15}
-            y={10}
-            text="ENTRY 2"
-            fontSize={12}
-            fontFamily="Arial"
-            fontStyle="bold"
-            fill="white"
-            width={80}
-            align="left"
-            verticalAlign="middle"
-            listening={false}
-          />
-        </Group>
-
-        {/* Exit 1*/}
-        <Group x={width + 60} y={20}>
-          <Rect
-            width={80}
-            height={30}
-            fill="#ff6b6b"
-            cornerRadius={15}
-            listening={false}
-          />
-          <Text
-            x={-15}
-            y={10}
-            text="EXIT 1"
-            fontSize={12}
-            fontFamily="Arial"
-            fontStyle="bold"
-            fill="white"
-            width={80}
-            align="right"
-            verticalAlign="middle"
-            listening={false}
-          />
-        </Group>
-
-        {/* Exit 2*/}
-        <Group x={width / 6 - 60} y={height / 2 + 250}>
-          <Rect
-            width={80}
-            height={30}
-            fill="#ff6b6b"
-            cornerRadius={15}
-            listening={false}
-          />
-          <Text
-            x={-15}
-            y={10}
-            text="EXIT 2"
-            fontSize={12}
-            fontFamily="Arial"
-            fontStyle="bold"
-            fill="white"
-            width={80}
-            align="right"
-            verticalAlign="middle"
-            listening={false}
-          />
-        </Group>
-
-        {/* Road/Path indicators
+        <Line points={points} stroke="#666" strokeWidth={4} listening={false} />
         <Line
-          points={[width / 6 - 20, 60, width / 6 - 20, height - 80]}
-          stroke="#999"
-          strokeWidth={3}
-          dash={[10, 5]}
+          points={[endX, endY, ah1x, ah1y]}
+          stroke="#666"
+          strokeWidth={4}
           listening={false}
         />
-
         <Line
-          points={[width / 2 + 50, 60, width / 2 + 50, height - 20]}
-          stroke="#999"
-          strokeWidth={3}
-          dash={[10, 5]}
+          points={[endX, endY, ah2x, ah2y]}
+          stroke="#666"
+          strokeWidth={4}
           listening={false}
-        /> */}
-
-        {/* Road/Path arrows - showing traffic flow direction */}
-        {/* Entry 1 to Exit 2 */}
-        {renderArrow([width / 6 - 20, 60, width / 6 - 20, 570])}
-        {/* left to right 1*/}
-        {renderArrow([width / 6 - 10, 120, width + 80, 120])}
-        {/* right to left 1*/}
-        {renderArrow([width + 80, 140, width / 6 - 10, 140])}
-        {/* left to right 2*/}
-        {renderArrow([width / 6 - 10, 330, width + 80, 330])}
-        {/* right to left 2*/}
-        {renderArrow([width + 80, 350, width / 6 - 10, 350])}
-        {/* left to right 3 */}
-        {renderArrow([width / 6 - 10, 530, width + 80, 530])}
-        {/* Entry 2 to Exit 1 */}
-        {renderArrow([width + 100, 570, width + 100, 60])}
+        />
       </Group>
     );
   };
+
+  const renderEntranceExit = () => (
+    <Group>
+      {/* Entry 1 */}
+      <Group x={width / 6 - 60} y={20}>
+        <Rect
+          width={80}
+          height={30}
+          fill="#667eea"
+          cornerRadius={15}
+          listening={false}
+        />
+        <Text
+          x={15}
+          y={10}
+          text="ENTRY 1"
+          fontSize={12}
+          fontFamily="Arial"
+          fontStyle="bold"
+          fill="white"
+          width={80}
+          align="left"
+          verticalAlign="middle"
+          listening={false}
+        />
+      </Group>
+
+      {/* Entry 2 */}
+      <Group x={width + 60} y={height / 2 + 250}>
+        <Rect
+          width={80}
+          height={30}
+          fill="#667eea"
+          cornerRadius={15}
+          listening={false}
+        />
+        <Text
+          x={15}
+          y={10}
+          text="ENTRY 2"
+          fontSize={12}
+          fontFamily="Arial"
+          fontStyle="bold"
+          fill="white"
+          width={80}
+          align="left"
+          verticalAlign="middle"
+          listening={false}
+        />
+      </Group>
+
+      {/* Exit 1 */}
+      <Group x={width + 60} y={20}>
+        <Rect
+          width={80}
+          height={30}
+          fill="#ff6b6b"
+          cornerRadius={15}
+          listening={false}
+        />
+        <Text
+          x={-15}
+          y={10}
+          text="EXIT 1"
+          fontSize={12}
+          fontFamily="Arial"
+          fontStyle="bold"
+          fill="white"
+          width={80}
+          align="right"
+          verticalAlign="middle"
+          listening={false}
+        />
+      </Group>
+
+      {/* Exit 2 */}
+      <Group x={width / 6 - 60} y={height / 2 + 250}>
+        <Rect
+          width={80}
+          height={30}
+          fill="#ff6b6b"
+          cornerRadius={15}
+          listening={false}
+        />
+        <Text
+          x={-15}
+          y={10}
+          text="EXIT 2"
+          fontSize={12}
+          fontFamily="Arial"
+          fontStyle="bold"
+          fill="white"
+          width={80}
+          align="right"
+          verticalAlign="middle"
+          listening={false}
+        />
+      </Group>
+
+      {/* Flow arrows */}
+      {renderArrow([width / 6 - 20, 60, width / 6 - 20, 570])}
+      {renderArrow([width / 6 - 10, 120, width + 80, 120])}
+      {renderArrow([width + 80, 140, width / 6 - 10, 140])}
+      {renderArrow([width / 6 - 10, 330, width + 80, 330])}
+      {renderArrow([width + 80, 350, width / 6 - 10, 350])}
+      {renderArrow([width / 6 - 10, 530, width + 80, 530])}
+      {renderArrow([width + 100, 570, width + 100, 60])}
+    </Group>
+  );
 
   return (
     <div className="parking-layout-canvas">
       {/* Controls */}
-      <div className="canvas-controls">
+      {/* <div className="canvas-controls">
         <div className="zoom-controls">
           <button
             className="control-btn"
@@ -566,25 +510,16 @@ const ParkingLayoutCanvas = ({
             🎯
           </button>
         </div>
-
-        {/* <div className="view-controls">
-          <label className="drag-toggle">
-            <input
-              type="checkbox"
-              checked={dragEnabled}
-              onChange={(e) => setDragEnabled(e.target.checked)}
-            />
-            Pan Mode
-          </label>
-        </div> */}
-      </div>
+        //<label className="drag-toggle"><input type="checkbox" checked={dragEnabled} onChange={(e) => setDragEnabled(e.target.checked)} /> Pan</label>
+      </div> */}
 
       {/* Legend */}
       <div className="canvas-legend">
         <div className="legend-item">
           <div
             className="legend-color"
-            style={{ backgroundColor: "#f8f9fa", border: "2px solid #dee2e6" }}
+            style={{ backgroundColor: "#28a745" }}
+            // style={{ backgroundColor: "#28a745", border: "2px solid #dee2e6" }}
           ></div>
           <span>Available</span>
         </div>
@@ -598,7 +533,7 @@ const ParkingLayoutCanvas = ({
         <div className="legend-item">
           <div
             className="legend-color"
-            style={{ backgroundColor: "#28a745" }}
+            style={{ backgroundColor: "#cfc61f" }}
           ></div>
           <span>Current</span>
         </div>
@@ -609,10 +544,6 @@ const ParkingLayoutCanvas = ({
           ></div>
           <span>Selected</span>
         </div>
-        {/* <div className="legend-item">
-          <div className="legend-color" style={{ backgroundColor: '#ffc107' }}></div>
-          <span>Reserved</span>
-        </div> */}
         <div className="legend-item">
           <div
             className="legend-color"
@@ -636,16 +567,16 @@ const ParkingLayoutCanvas = ({
         <Stage
           width={canvasSize.width}
           height={canvasSize.height}
-          onWheel={handleWheel}
-          scaleX={stageScale}
-          scaleY={stageScale}
-          x={stageX}
-          y={stageY}
-          draggable={dragEnabled}
-          onDragEnd={(e) => {
-            setStageX(e.target.x());
-            setStageY(e.target.y());
-          }}
+          // onWheel={handleWheel}
+          // scaleX={stageScale}
+          // scaleY={stageScale}
+          // x={stageX}
+          // y={stageY}
+          // draggable={dragEnabled}
+          // onDragEnd={(e) => {
+          //   setStageX(e.target.x());
+          //   setStageY(e.target.y());
+          // }}
           ref={stageRef}
         >
           <Layer>
@@ -658,11 +589,9 @@ const ParkingLayoutCanvas = ({
               fill="#f8f9fa"
               listening={false}
             />
-
             {/* Entrance/Exit */}
             {renderEntranceExit()}
-
-            {/* Parking Sections */}
+            {/* Sections */}
             {sections.map((section) => renderSection(section))}
           </Layer>
         </Stage>

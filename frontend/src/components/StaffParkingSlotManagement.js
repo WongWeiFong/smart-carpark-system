@@ -1,3 +1,4 @@
+// StaffParkingSlotManagement.js
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -14,7 +15,6 @@ const StaffParkingSlotManagement = () => {
     updateSlotStatus,
     resetSlotToSensor,
     repairSensor,
-    loading,
   } = useParking();
 
   const [allSlots, setAllSlots] = useState([]);
@@ -27,8 +27,26 @@ const StaffParkingSlotManagement = () => {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState(new Set());
 
+  // Helper: build a unique ID like "E-2" from a slot object
+  const toSlotId = (slot) => {
+    if (!slot) return "";
+    return `${slot.section}-${slot.number}`;
+  };
+
+  // Convert the raw slots from DynamoDB/context into the shape the canvas expects
+  const toCanvasSlots = (slots) =>
+    (slots || []).map((s) => ({
+      number: toSlotId(s), // "E-2"
+      status: s.effectiveStatus || s.status || "available", // fallback to "available"
+      effectiveStatus: s.effectiveStatus, // optional: staff override status
+      manualOverride: !!s.manualOverride, // optional: highlight overrides
+    }));
+
   useEffect(() => {
     loadAllSlots();
+    // Optionally poll every 10 seconds for updates
+    const id = setInterval(loadAllSlots, 10000);
+    return () => clearInterval(id);
   }, []);
 
   const loadAllSlots = async () => {
@@ -40,92 +58,73 @@ const StaffParkingSlotManagement = () => {
     }
   };
 
-  const handleSlotClick = (uniqueSlotId) => {
-    console.log("Slot clicked:", uniqueSlotId);
-    setSelectedSlot(uniqueSlotId);
-
-    // Find slot by unique ID format (e.g., "C-1", "ML-2")
-    const slot = allSlots.find(
+  const getSlotInfo = (uniqueSlotId) => {
+    // find matching slot by "E-2"
+    return allSlots.find(
       (s) =>
-        s.id === uniqueSlotId || `${s.section}-${s.number}` === uniqueSlotId
+        `${s.section}-${s.number}` === uniqueSlotId || s.id === uniqueSlotId
     );
-    console.log("Found slot:", slot);
+  };
 
+  const handleSlotClick = (uniqueSlotId) => {
+    setSelectedSlot(uniqueSlotId);
+    const slot = getSlotInfo(uniqueSlotId);
     if (slot) {
       setEditingSlot(uniqueSlotId);
       setNewStatus(slot.effectiveStatus);
-    } else {
-      console.log("Slot not found for ID:", uniqueSlotId);
     }
   };
 
-  const handleSlotHover = (slotNumber, isHovering) => {
-    if (isHovering) {
-      setHoveredSlot(slotNumber);
-    } else {
-      setHoveredSlot(null);
-    }
+  const handleSlotHover = (uniqueSlotId, isHovering) => {
+    setHoveredSlot(isHovering ? uniqueSlotId : null);
   };
 
   const handleStatusUpdate = async (uniqueSlotId, status, overrideReason) => {
     try {
-      // Find the actual slot to get the slot number
       const slot = getSlotInfo(uniqueSlotId);
       if (!slot) {
-        console.error("Slot not found for ID:", uniqueSlotId);
-        alert("❌ Slot not found. Please try again.");
+        alert("Slot not found. Please try again.");
         return;
       }
-
-      console.log(
-        `Updating slot ${uniqueSlotId} (number: ${slot.number}) to ${status}`
-      );
-
-      // Update slot status via context (staff moderator control)
+      // The backend (useParking) expects the numeric slot number, not the composite string
       await updateSlotStatus(slot.number, status, overrideReason);
-
-      // Reload slots to get updated data
       await loadAllSlots();
-
       setEditingSlot(null);
       setSelectedSlot(null);
       setNewStatus("");
-
-      alert(
-        `✅ Slot ${uniqueSlotId} status changed to ${status} by staff moderator`
-      );
+      alert(`Status for ${uniqueSlotId} changed to ${status}.`);
     } catch (error) {
       console.error("Failed to update slot status:", error);
-      alert("❌ Failed to update slot status. Please try again.");
+      alert("Failed to update slot status. Please try again.");
     }
   };
 
-  const handleResetToSensor = async (slotNumber) => {
+  const handleResetToSensor = async (uniqueSlotId) => {
     try {
-      await resetSlotToSensor(slotNumber);
+      const slot = getSlotInfo(uniqueSlotId);
+      if (!slot) return;
+      await resetSlotToSensor(slot.number);
       await loadAllSlots();
-
       setEditingSlot(null);
       setSelectedSlot(null);
       setNewStatus("");
-
-      alert(`Slot ${slotNumber} reset to sensor control`);
+      alert(`Slot ${uniqueSlotId} reset to automatic sensor control.`);
     } catch (error) {
       console.error("Failed to reset slot to sensor:", error);
       alert("Failed to reset slot to sensor. Please try again.");
     }
   };
 
-  const handleRepairSensor = async (slotNumber) => {
+  const handleRepairSensor = async (uniqueSlotId) => {
     try {
-      await repairSensor(slotNumber);
+      const slot = getSlotInfo(uniqueSlotId);
+      if (!slot) return;
+      await repairSensor(slot.number);
       await loadAllSlots();
-
       setEditingSlot(null);
       setSelectedSlot(null);
       setNewStatus("");
-
-      alert(`Sensor ${slotNumber} repaired successfully`);
+      alert(`Sensor for ${uniqueSlotId} repaired successfully.`);
     } catch (error) {
       console.error("Failed to repair sensor:", error);
       alert("Failed to repair sensor. Please try again.");
@@ -134,52 +133,25 @@ const StaffParkingSlotManagement = () => {
 
   const handleBulkStatusUpdate = async (status) => {
     if (selectedSlots.size === 0) {
-      alert("Please select slots to update");
+      alert("Please select slots to update.");
       return;
     }
-
     try {
-      console.log("Bulk updating slots:", Array.from(selectedSlots));
-
-      // Convert unique slot IDs to actual slot objects and update them
       const promises = Array.from(selectedSlots).map((uniqueSlotId) => {
         const slot = getSlotInfo(uniqueSlotId);
-        if (slot) {
-          console.log(
-            `Updating slot ${uniqueSlotId} (number: ${slot.number}) to ${status}`
-          );
-          return updateSlotStatus(slot.number, status, "bulk_action");
-        } else {
-          console.error(`Slot not found for ID: ${uniqueSlotId}`);
-          return Promise.resolve(); // Skip this slot
-        }
+        return slot
+          ? updateSlotStatus(slot.number, status, "bulk_action")
+          : Promise.resolve();
       });
-
       await Promise.all(promises);
-
-      // Reload all slots from context to get updated data
       await loadAllSlots();
-
-      // Clear selections and exit bulk mode
       setSelectedSlots(new Set());
       setShowBulkActions(false);
-
-      alert(`✅ Bulk update: ${selectedSlots.size} slots changed to ${status}`);
+      alert("Bulk update complete.");
     } catch (error) {
       console.error("Failed to bulk update slot status:", error);
-      alert("❌ Failed to update slot statuses. Please try again.");
+      alert("Failed to update slot statuses. Please try again.");
     }
-  };
-
-  const handleLogout = () => {
-    logout();
-  };
-
-  const getSlotInfo = (uniqueSlotId) => {
-    return allSlots.find(
-      (s) =>
-        s.id === uniqueSlotId || `${s.section}-${s.number}` === uniqueSlotId
-    );
   };
 
   const getFilteredSlots = () => {
@@ -188,7 +160,7 @@ const StaffParkingSlotManagement = () => {
         statusFilter === "all" || slot.effectiveStatus === statusFilter;
       const matchesSearch =
         searchTerm === "" ||
-        slot.number.toString().includes(searchTerm) ||
+        slot.number?.toString().includes(searchTerm) ||
         (slot.section &&
           slot.section.toLowerCase().includes(searchTerm.toLowerCase()));
       return matchesFilter && matchesSearch;
@@ -197,7 +169,7 @@ const StaffParkingSlotManagement = () => {
 
   const getStatusCounts = () => {
     return allSlots.reduce((counts, slot) => {
-      const status = slot.effectiveStatus;
+      const status = slot.effectiveStatus || slot.status || "available";
       counts[status] = (counts[status] || 0) + 1;
       counts.sensorErrors =
         (counts.sensorErrors || 0) +
@@ -226,7 +198,7 @@ const StaffParkingSlotManagement = () => {
             <span className="welcome-text">
               안녕하세요 {user?.role + " " + user?.staffName || "staff"}
             </span>
-            <button onClick={handleLogout} className="logout-btn">
+            <button onClick={logout} className="logout-btn">
               Logout
             </button>
           </div>
@@ -234,7 +206,7 @@ const StaffParkingSlotManagement = () => {
       </header>
 
       <main className="parking-main">
-        {/* Statistics Section */}
+        {/* Statistics section */}
         <div className="staff-stats-section">
           <div className="stats-grid">
             <div className="stat-card">
@@ -288,7 +260,7 @@ const StaffParkingSlotManagement = () => {
           </div>
         </div>
 
-        {/* Controls Section */}
+        {/* Controls section */}
         <div className="staff-controls-section">
           <div className="controls-card">
             <div className="controls-header">
@@ -317,7 +289,6 @@ const StaffParkingSlotManagement = () => {
                   <option value="available">Available</option>
                   <option value="occupied">Occupied</option>
                   <option value="maintenance">Maintenance</option>
-                  {/* <option value="reserved">Reserved</option> */}
                 </select>
               </div>
 
@@ -381,7 +352,7 @@ const StaffParkingSlotManagement = () => {
           <h3>🎯 Interactive Parking Layout - Staff Mode</h3>
           <KonvaErrorBoundary>
             <ParkingLayoutCanvas
-              slots={allSlots}
+              slots={toCanvasSlots(allSlots)} // map raw slots to canvas shape
               currentSlot={null}
               selectedSlot={selectedSlot}
               onSlotClick={handleSlotClick}
@@ -392,26 +363,23 @@ const StaffParkingSlotManagement = () => {
               staffMode={true}
               showBulkActions={showBulkActions}
               selectedSlots={selectedSlots}
-              onBulkSlotToggle={(slotNumber) => {
+              onBulkSlotToggle={(slotId) => {
                 setSelectedSlots((prev) => {
-                  const newSet = new Set(prev);
-                  if (newSet.has(slotNumber)) {
-                    newSet.delete(slotNumber);
-                  } else {
-                    newSet.add(slotNumber);
-                  }
-                  return newSet;
+                  const next = new Set(prev);
+                  if (next.has(slotId)) next.delete(slotId);
+                  else next.add(slotId);
+                  return next;
                 });
               }}
             />
 
-            {/* Slot Info Display */}
+            {/* Slot info hover/selected */}
             {(hoveredSlot || selectedSlot) && (
               <div className="slot-info-display">
                 {hoveredSlot && (
                   <div className="hovered-slot-info">
                     <strong>
-                      Slot {hoveredSlot} - Section{" "}
+                      Slot {hoveredSlot} – Section{" "}
                       {getSlotInfo(hoveredSlot)?.section}
                     </strong>
                     <span className="slot-status">
@@ -419,14 +387,14 @@ const StaffParkingSlotManagement = () => {
                       {getSlotInfo(hoveredSlot)?.effectiveStatus || "Available"}
                     </span>
                     <span className="sensor-health">
-                      Sensor: {getSlotInfo(hoveredSlot)?.sensorHealth}
+                      Sensor: {getSlotInfo(hoveredSlot)?.sensorHealth || "OK"}
                     </span>
                   </div>
                 )}
                 {selectedSlot && (
                   <div className="selected-slot-info">
                     <strong>
-                      Slot {selectedSlot} - Section{" "}
+                      Slot {selectedSlot} – Section{" "}
                       {getSlotInfo(selectedSlot)?.section}
                     </strong>
                     <span className="slot-status">
@@ -440,7 +408,7 @@ const StaffParkingSlotManagement = () => {
                     <span className="last-updated">
                       Last Changed:{" "}
                       {new Date(
-                        getSlotInfo(selectedSlot)?.lastUpdated || new Date()
+                        getSlotInfo(selectedSlot)?.lastUpdated || Date.now()
                       ).toLocaleString()}
                     </span>
                   </div>
@@ -450,13 +418,13 @@ const StaffParkingSlotManagement = () => {
           </KonvaErrorBoundary>
         </div>
 
-        {/* Status Update Modal */}
+        {/* Status update modal */}
         {editingSlot && (
           <div className="status-edit-modal">
             <div className="modal-content">
               <div className="modal-header">
                 <h3>
-                  Change Status - Slot {editingSlot} (Section{" "}
+                  Change Status – Slot {editingSlot} (Section{" "}
                   {getSlotInfo(editingSlot)?.section})
                 </h3>
                 <button
@@ -479,7 +447,7 @@ const StaffParkingSlotManagement = () => {
                     </span>
                     <span
                       className={`current-status-value ${
-                        getSlotInfo(editingSlot)?.effectiveStatus
+                        getSlotInfo(editingSlot)?.effectiveStatus || "available"
                       }`}
                     >
                       {getSlotInfo(
@@ -495,13 +463,13 @@ const StaffParkingSlotManagement = () => {
                   <p className="last-update-info">
                     Last changed:{" "}
                     {new Date(
-                      getSlotInfo(editingSlot)?.lastUpdated || new Date()
+                      getSlotInfo(editingSlot)?.lastUpdated || Date.now()
                     ).toLocaleString()}
                   </p>
                 </div>
 
                 <div className="status-options">
-                  <label>🛠️ Staff Moderator Controls - Change Status To:</label>
+                  <label>🛠️ Staff Moderator Controls – Change Status To:</label>
                   <div className="status-buttons">
                     <button
                       className={`status-btn available ${
@@ -603,39 +571,25 @@ const StaffParkingSlotManagement = () => {
             <ul>
               <li>
                 🎯 <strong>Status Only:</strong> Manage parking slot
-                availability (available/occupied/maintenance)
+                availability (available, occupied, maintenance).
               </li>
               <li>
                 🖱️ <strong>Simple Control:</strong> Click any slot to change its
-                status
+                status.
               </li>
               <li>
                 🔄 <strong>Any Transition:</strong> Change any status to any
-                other status
-              </li>
-              <li>
-                ✅ <strong>Available:</strong> Slot is open for parking
-              </li>
-              <li>
-                🚗 <strong>Occupied:</strong> Slot is currently in use
-              </li>
-              <li>
-                🔧 <strong>Maintenance:</strong> Slot is temporarily out of
-                service
+                other status.
               </li>
               <li>
                 🟠 <strong>Staff Controlled:</strong> Orange borders show your
-                manual changes
-              </li>
-              <li>
-                📍 <strong>Location Focus:</strong> No vehicle details - just
-                slot status
+                manual changes.
               </li>
             </ul>
             <div className="moderator-highlight">
               🎯{" "}
               <strong>
-                Focus on slot status management only - no vehicle or user
+                Focus on slot status management only – no vehicle or user
                 information needed!
               </strong>
             </div>

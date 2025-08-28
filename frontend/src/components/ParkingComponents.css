@@ -315,9 +315,10 @@
   margin-bottom: 15px;
 }
 
-.edit-slot-btn, .add-slot-btn {
+.edit-slot-btn,
+.add-slot-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white; 
+  color: white;
   border: none;
   padding: 12px 24px;
   border-radius: 8px;
@@ -326,7 +327,8 @@
   transition: all 0.3s ease;
 }
 
-.edit-slot-btn:hover, .add-slot-btn:hover {
+.edit-slot-btn:hover,
+.add-slot-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
 }
@@ -407,13 +409,15 @@
   overflow-x: auto;
 }
 
-.entrance-section, .exit-section {
+.entrance-section,
+.exit-section {
   text-align: center;
   padding: 15px;
   margin-bottom: 20px;
 }
 
-.entrance-label, .exit-label {
+.entrance-label,
+.exit-label {
   background: #667eea;
   color: white;
   padding: 10px 20px;
@@ -795,7 +799,8 @@
   align-items: center;
 }
 
-.car-count, .parked-count {
+.car-count,
+.parked-count {
   padding: 8px 16px;
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   color: white;
@@ -824,8 +829,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {
@@ -989,7 +999,8 @@
   gap: 5px;
 }
 
-.save-btn, .cancel-btn {
+.save-btn,
+.cancel-btn {
   width: 28px;
   height: 28px;
   border: none;
@@ -1435,7 +1446,8 @@
   letter-spacing: 0.5px;
 }
 
-.filter-input, .filter-select {
+.filter-input,
+.filter-select {
   padding: 12px 16px;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
@@ -1443,7 +1455,8 @@
   transition: border-color 0.3s ease;
 }
 
-.filter-input:focus, .filter-select:focus {
+.filter-input:focus,
+.filter-select:focus {
   outline: none;
   border-color: #ff9500;
 }
@@ -1727,7 +1740,9 @@
   color: #555;
 }
 
-.form-input, .form-select, .form-textarea {
+.form-input,
+.form-select,
+.form-textarea {
   padding: 12px 16px;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
@@ -1735,7 +1750,9 @@
   transition: border-color 0.3s ease;
 }
 
-.form-input:focus, .form-select:focus, .form-textarea:focus {
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
   outline: none;
   border-color: #ff9500;
 }
@@ -1795,35 +1812,35 @@
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .filters-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .filter-actions {
     flex-direction: column;
     gap: 15px;
     align-items: stretch;
   }
-  
+
   .transactions-table {
     font-size: 12px;
   }
-  
+
   .transactions-table th,
   .transactions-table td {
     padding: 10px 8px;
   }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: 5px;
   }
-  
+
   .detail-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .modal-actions {
     flex-direction: column;
   }
@@ -1837,7 +1854,8 @@
   justify-content: space-between;
 }
 
-.view-details-button, .edit-button {
+.view-details-button,
+.edit-button {
   flex: 1;
   padding: 10px 16px;
   text-align: center;
@@ -1900,30 +1918,30 @@
     gap: 15px;
     text-align: center;
   }
-  
+
   .header-left {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .page-title {
     font-size: 24px;
   }
-  
+
   .parking-actions {
     flex-direction: column;
     gap: 15px;
     align-items: stretch;
   }
-  
+
   .summary-info {
     justify-content: center;
   }
-  
+
   .parking-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .parking-actions-row {
     flex-direction: column;
     gap: 10px;
@@ -1934,33 +1952,33 @@
   .parking-management-main {
     padding: 20px 10px;
   }
-  
+
   .parking-card-header {
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
   }
-  
+
   .detail-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 5px;
   }
-  
+
   .slot-edit-container {
     width: 100%;
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .slot-input {
     width: 100%;
   }
-  
+
   .slot-edit-actions {
     justify-content: center;
   }
-} 
+}
 
 /* System Settings Styles */
 .system-settings-container {
@@ -2559,7 +2577,7 @@
   .machines-grid {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
-  
+
   .rates-grid {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
@@ -2569,33 +2587,33 @@
   .system-settings-main {
     padding: 20px 15px;
   }
-  
+
   .settings-tabs {
     flex-direction: column;
   }
-  
+
   .tab-button {
     flex: none;
   }
-  
+
   .filter-row {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .filter-group {
     min-width: auto;
   }
-  
+
   .logs-summary {
     flex-direction: column;
   }
-  
+
   .rates-controls {
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .machines-grid,
   .rates-grid {
     grid-template-columns: 1fr;
@@ -2607,21 +2625,21 @@
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .radio-group {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .logs-table {
     font-size: 12px;
   }
-  
+
   .logs-table th,
   .logs-table td {
     padding: 8px 6px;
   }
-} 
+}
 
 /* Emergency Management Styles */
 .emergency-management-container {
@@ -2720,8 +2738,16 @@
 }
 
 @keyframes emergencyBlink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0.6; }
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0.6;
+  }
 }
 
 /* Emergency Controls */
@@ -2973,7 +2999,7 @@
   .emergency-status-section {
     grid-template-columns: 1fr;
   }
-  
+
   .bollards-grid,
   .doors-grid {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -2984,25 +3010,25 @@
   .emergency-main {
     padding: 20px 15px;
   }
-  
+
   .status-card,
   .emergency-controls,
   .bollards-section,
   .doors-section {
     padding: 20px;
   }
-  
+
   .bollards-grid,
   .doors-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .bollard-header,
   .door-header {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .bollard-status-indicator,
   .door-status-indicator {
     align-self: flex-start;
@@ -3015,17 +3041,17 @@
     align-items: flex-start;
     gap: 5px;
   }
-  
+
   .emergency-btn {
     padding: 12px 16px;
     font-size: 14px;
   }
-  
+
   .bollard-card,
   .door-card {
     padding: 15px;
   }
-} 
+}
 
 /* Enhanced Parking Layout Styles */
 .enhanced-layout-section {
@@ -3139,16 +3165,16 @@
     flex-direction: column;
     gap: 15px;
   }
-  
+
   .hovered-slot-info,
   .selected-slot-info {
     min-width: auto;
   }
-  
+
   .instructions-card {
     padding: 20px;
   }
-  
+
   .instructions-card li {
     font-size: 14px;
   }
@@ -3158,11 +3184,11 @@
   .enhanced-layout-section h3 {
     font-size: 20px;
   }
-  
+
   .instructions-card h4 {
     font-size: 16px;
   }
-  
+
   .instructions-card li {
     font-size: 13px;
   }

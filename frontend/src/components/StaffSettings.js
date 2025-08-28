@@ -143,7 +143,7 @@ const StaffSettings = () => {
   //   };
 
   const handleBack = () => {
-    navigate("/homepage");
+    navigate("/home");
   };
 
   if (loading && !profile.staffID) {
@@ -294,7 +294,13 @@ const StaffSettings = () => {
             </div>
           )}
 
-          <div style={{ display: "flex", gap: "15px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "20px",
+            }}
+          >
             <button
               type="submit"
               className="auth-staff-button"
