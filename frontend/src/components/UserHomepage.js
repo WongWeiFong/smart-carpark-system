@@ -29,23 +29,6 @@ const UserHomepage = () => {
       <main className="homepage-main">
         <div className="dashboard-grid">
           <div className="dashboard-card">
-            <div className="card-icon">🚗</div>
-            <h3>My Car</h3>
-            <p>Add your car plate number for auto deduction</p>
-            <Link
-              to="/cars"
-              className="card-button"
-              style={{
-                textDecoration: "none",
-                display: "block",
-                textAlign: "center",
-              }}
-            >
-              View Car
-            </Link>
-          </div>
-
-          <div className="dashboard-card">
             <div className="card-icon">🅿️</div>
             <h3>Find Parking</h3>
             <p>Search for available parking spots near your location</p>
@@ -76,6 +59,23 @@ const UserHomepage = () => {
               }}
             >
               Manage Parking
+            </Link>
+          </div>
+
+          <div className="dashboard-card">
+            <div className="card-icon">🚗</div>
+            <h3>My Car</h3>
+            <p>Add your car plate number for auto deduction</p>
+            <Link
+              to="/cars"
+              className="card-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              View Car
             </Link>
           </div>
 

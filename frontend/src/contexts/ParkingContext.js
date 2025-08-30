@@ -447,9 +447,10 @@ export const ParkingProvider = ({ children }) => {
         section: item.sectionId,
         number: item.slotNo,
         effectiveStatus: (item.status || "available").toLowerCase(),
-        sensorHealth: item.sensorHealth ?? "healthy",
-        manualOverride: !!item.manualOverride,
-        // ...any other fields you need
+        // sensorHealth: item.sensorHealth ?? "healthy",
+        // manualOverride: !!item.manualOverride,
+        updatedBy: item.updatedBy || "System",
+        // staffControlled: (item.updatedBy || "System") === "Staff",
       }));
     } catch (err) {
       console.error("Error fetching parking slots:", err);
@@ -457,240 +458,48 @@ export const ParkingProvider = ({ children }) => {
     }
   };
 
-  // Generate initial sensor data for parking slots
-  const generateInitialSensorData = () => {
-    const slots = [];
-    for (let i = 1; i <= 160; i++) {
-      const random = Math.random();
-      const sensorWorking = Math.random() > 0.05; // 95% sensors working
-
-      // Sensor-detected status
-      let sensorStatus = "available";
-      if (sensorWorking) {
-        if (random > 0.7) sensorStatus = "occupied";
-      } else {
-        sensorStatus = "sensor_error";
-      }
-
-      slots.push({
-        number: i,
-        section: i <= 40 ? "A" : i <= 80 ? "B" : i <= 120 ? "C" : "D",
-
-        // Sensor data
-        sensorStatus: sensorStatus, // 'available', 'occupied', 'sensor_error'
-        sensorId: `SENSOR_${String(i).padStart(3, "0")}`,
-        sensorHealth: sensorWorking ? "healthy" : "malfunction",
-        lastSensorReading: new Date().toISOString(),
-        sensorType: "ultrasonic", // ultrasonic, magnetic, camera
-
-        // Staff override data
-        manualOverride: false,
-        manualStatus: null, // only set when manually overridden
-        overrideReason: null, // maintenance, sensor_malfunction, special_event
-
-        // Status resolution (what actually shows to users)
-        effectiveStatus: sensorWorking ? sensorStatus : "maintenance",
-
-        // Metadata
-        lastUpdated: new Date().toISOString(),
-        updatedBy: "System",
-
-        // Physical slot info
-        coordinates: {
-          x:
-            (i <= 40 ? 50 : i <= 80 ? 450 : i <= 120 ? 50 : 450) +
-            (((i - 1) % 40) % 10) * 34,
-          y:
-            (i <= 40 ? 100 : i <= 80 ? 100 : i <= 120 ? 350 : 350) +
-            Math.floor(((i - 1) % 40) / 10) * 24 +
-            30,
-        },
-      });
-    }
-    return slots;
-  };
-
-  // Simulate sensor readings updates (for demo purposes)
-  const updateSensorReadings = (slots) => {
-    return slots.map((slot) => {
-      // Only update if sensor is healthy and not manually overridden
-      if (slot.sensorHealth === "healthy" && !slot.manualOverride) {
-        // Small chance of status change (simulating cars entering/leaving)
-        if (Math.random() < 0.02) {
-          const newSensorStatus =
-            slot.sensorStatus === "occupied" ? "available" : "occupied";
-          return {
-            ...slot,
-            sensorStatus: newSensorStatus,
-            effectiveStatus: newSensorStatus,
-            lastSensorReading: new Date().toISOString(),
-            lastUpdated: new Date().toISOString(),
-            updatedBy: "Sensor",
-          };
-        }
-
-        // Small chance of sensor malfunction
-        if (Math.random() < 0.001) {
-          return {
-            ...slot,
-            sensorStatus: "sensor_error",
-            sensorHealth: "malfunction",
-            effectiveStatus: "maintenance",
-            lastSensorReading: new Date().toISOString(),
-            lastUpdated: new Date().toISOString(),
-            updatedBy: "System",
-          };
-        }
-      }
-
-      return slot;
-    });
-  };
-
-  const updateSlotStatus = async (
-    slotNumber,
-    newStatus,
-    overrideReason = null
-  ) => {
-    if (!user || user.role !== "staff") {
+  // ParkingContext.js (only the relevant parts)
+  const updateSlotStatus = async (slotId, newStatus) => {
+    if (!user || (user.role !== "Staff" && user.role !== "Admin")) {
       throw new Error("Unauthorized: Only staff can update slot status");
     }
-
-    setLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      const slotsData = localStorage.getItem("sensor_parking_slots_data");
-      const slots = slotsData ? JSON.parse(slotsData) : [];
-
-      const updatedSlots = slots.map((slot) => {
-        if (slot.number === slotNumber) {
-          // Staff is manually overriding the sensor
-          return {
-            ...slot,
-            manualOverride: true,
-            manualStatus: newStatus,
-            effectiveStatus: newStatus,
-            overrideReason: overrideReason || "manual_adjustment",
-            lastUpdated: new Date().toISOString(),
-            updatedBy: user?.name || user?.email || "Staff",
-          };
-        }
-        return slot;
-      });
-
-      localStorage.setItem(
-        "sensor_parking_slots_data",
-        JSON.stringify(updatedSlots)
+    const response = await fetch(`${API}/parking/slots/${slotId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        slotID: slotId,
+        status: newStatus,
+        updatedBy: "Staff",
+      }),
+    });
+    if (!response.ok) {
+      const { error } = await response.json();
+      throw new Error(
+        error || "Failed to update slot status from parkingcontext"
       );
-
-      return {
-        success: true,
-        message: `Slot ${slotNumber} status changed to ${newStatus} by staff moderator`,
-      };
-    } catch (error) {
-      console.error("Error updating slot status:", error);
-      throw error;
-    } finally {
-      setLoading(false);
     }
+    return await response.json();
   };
 
-  // Reset slot to sensor control (remove manual override)
-  const resetSlotToSensor = async (slotNumber) => {
-    if (!user || user.role !== "staff") {
-      throw new Error("Unauthorized: Only staff can reset slot status");
+  const resetSlotToSensor = async (slotId, newStatus) => {
+    if (!user || (user.role !== "Staff" && user.role !== "Admin")) {
+      throw new Error("Unauthorized: Only staff can reset slots");
     }
-
-    setLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      const slotsData = localStorage.getItem("sensor_parking_slots_data");
-      const slots = slotsData ? JSON.parse(slotsData) : [];
-
-      const updatedSlots = slots.map((slot) => {
-        if (slot.number === slotNumber) {
-          return {
-            ...slot,
-            manualOverride: false,
-            manualStatus: null,
-            effectiveStatus:
-              slot.sensorHealth === "healthy"
-                ? slot.sensorStatus
-                : "maintenance",
-            overrideReason: null,
-            lastUpdated: new Date().toISOString(),
-            updatedBy: user?.name || user?.email || "Staff",
-          };
-        }
-        return slot;
-      });
-
-      localStorage.setItem(
-        "sensor_parking_slots_data",
-        JSON.stringify(updatedSlots)
-      );
-
-      return {
-        success: true,
-        message: `Slot ${slotNumber} reset to sensor control`,
-      };
-    } catch (error) {
-      console.error("Error resetting slot to sensor:", error);
-      throw error;
-    } finally {
-      setLoading(false);
+    // Either call the reset route or reuse the same PUT route with updatedBy = "System".
+    const response = await fetch(`${API}/parking/slots/${slotId}/reset`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        slotID: slotId,
+        status: newStatus,
+        updatedBy: "System",
+      }),
+    });
+    if (!response.ok) {
+      const { error } = await response.json();
+      throw new Error(error || "Failed to reset slot from parkingcontext");
     }
-  };
-
-  // Simulate sensor repair (for demo purposes)
-  const repairSensor = async (slotNumber) => {
-    if (!user || user.role !== "staff") {
-      throw new Error("Unauthorized: Only staff can repair sensors");
-    }
-
-    setLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate repair time
-
-      const slotsData = localStorage.getItem("sensor_parking_slots_data");
-      const slots = slotsData ? JSON.parse(slotsData) : [];
-
-      const updatedSlots = slots.map((slot) => {
-        if (slot.number === slotNumber) {
-          const newSensorStatus =
-            Math.random() > 0.5 ? "available" : "occupied";
-          return {
-            ...slot,
-            sensorHealth: "healthy",
-            sensorStatus: newSensorStatus,
-            effectiveStatus: slot.manualOverride
-              ? slot.manualStatus
-              : newSensorStatus,
-            lastSensorReading: new Date().toISOString(),
-            lastUpdated: new Date().toISOString(),
-            updatedBy: "Maintenance System",
-          };
-        }
-        return slot;
-      });
-
-      localStorage.setItem(
-        "sensor_parking_slots_data",
-        JSON.stringify(updatedSlots)
-      );
-
-      return {
-        success: true,
-        message: `Sensor ${slotNumber} repaired successfully`,
-      };
-    } catch (error) {
-      console.error("Error repairing sensor:", error);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    return await response.json();
   };
 
   const value = {
@@ -711,7 +520,6 @@ export const ParkingProvider = ({ children }) => {
     getAllParkingSlots,
     updateSlotStatus,
     resetSlotToSensor,
-    repairSensor,
   };
 
   return (

@@ -49,7 +49,8 @@ const Register = () => {
           lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
-          carPlateNo: formData.carPlateNo,
+          carPlateNo: formData.carPlateNo || undefined,
+          createdAt: new Date().toISOString(),
         }),
       });
 

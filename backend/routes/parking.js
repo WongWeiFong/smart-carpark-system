@@ -3,6 +3,8 @@ const express = require("express");
 const router = express.Router();
 const { docClient } = require("../lib/dynamoClient");
 const {
+  DynamoDBDocumentClient,
+  UpdateCommand,
   GetCommand,
   ScanCommand,
   QueryCommand,
@@ -24,17 +26,63 @@ router.get("/slots", async (req, res) => {
   }
 });
 
-// Get one slot by slotId
-router.get("/slots/:slotId", async (req, res) => {
+router.put("/slots/:slotId", async (req, res) => {
   const { slotId } = req.params;
+  const { status, updatedBy } = req.body;
+
+  if (!status) {
+    return res.status(400).json({ error: "status is required" });
+  }
+
   try {
-    const data = await docClient.send(
-      new GetCommand({ TableName: PARKING_LOT_TABLE, Key: { slotId } })
+    await docClient.send(
+      new UpdateCommand({
+        TableName: PARKING_LOT_TABLE,
+        Key: { slotID: slotId },
+        UpdateExpression: "SET #st = :s, #ub = :u",
+        ExpressionAttributeNames: {
+          "#st": "status",
+          "#ub": "updatedBy",
+        },
+        ExpressionAttributeValues: {
+          ":s": status,
+          ":u": updatedBy || "Staff",
+        },
+      })
     );
-    res.json({ item: data.Item || null });
+    res.json({ slotId, status });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch slot" });
+    console.error("Error updating slot:", err);
+    res
+      .status(500)
+      .json({ error: "Failed to update slot status from parking.js" });
+  }
+});
+
+router.put("/slots/:slotId/reset", async (req, res) => {
+  const { slotId } = req.params;
+  const { status, updatedBy } = req.body;
+  try {
+    // In a real app you might recompute status from sensor readings; here we just clear overrides.
+    await docClient.send(
+      new UpdateCommand({
+        TableName: PARKING_LOT_TABLE,
+        Key: { slotID: slotId },
+        UpdateExpression: "SET #st = :s, #ub = :u",
+        ExpressionAttributeNames: {
+          "#st": "status",
+          "#ub": "updatedBy",
+        },
+        ExpressionAttributeValues: {
+          ":s": status || "available",
+          ":u": updatedBy || "System",
+        },
+      })
+    );
+    res.json({ slotId, status });
+  } catch (err) {
+    console.error("Error resetting slot:", err);
+    res.status(500).json({ error: "Failed to reset slot from parking.js" });
   }
 });
 

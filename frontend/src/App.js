@@ -17,10 +17,10 @@ import CarList from "./components/CarList";
 import CarDetails from "./components/CarDetails";
 import AddCar from "./components/AddCar";
 import ParkingHistory from "./components/ParkingHistory";
-import ParkingSlot from "./components/ParkingSlot";
-// import EnhancedParkingSlot from "./components/EnhancedParkingSlot";                  //view from cars details
+import ParkingSlot from "./components/ParkingSlot"; //for user to view which slot is empty
+// import EnhancedParkingSlot from "./components/EnhancedParkingSlot";
 import ParkingLayoutDemo from "./components/ParkingLayoutDemo"; //edit car plate for self view
-import StaffParkingSlotManagement from "./components/StaffParkingSlotManagement"; //staff edit parking sensor status
+import StaffParkingSlotManagement from "./components/StaffParkingSlotManagement"; //staff edit parking slot for availability
 // import ParkingManagement from "./components/ParkingManagement";                      //self edit car everything
 import PaymentHistory from "./components/PaymentHistory";
 import RevenueManagement from "./components/RevenueManagement";
