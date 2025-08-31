@@ -5,8 +5,8 @@ import { useAuth } from "../contexts/AuthContext";
 import { useParking } from "../contexts/ParkingContext";
 import ParkingLayoutCanvas from "./ParkingLayoutCanvas";
 import KonvaErrorBoundary from "./KonvaErrorBoundary";
-import "./ParkingComponents.css";
 import "./StaffParkingManagement.css";
+import "./ParkingComponents.css";
 
 const StaffParkingSlotManagement = () => {
   const { user, logout } = useAuth();
@@ -114,6 +114,29 @@ const StaffParkingSlotManagement = () => {
     } catch (error) {
       console.error("Failed to reset slot to sensor:", error);
       alert("Failed to reset slot to sensor. Please try again.");
+    }
+  };
+
+  const handleBulkStatusUpdate = async (status) => {
+    if (selectedSlots.size === 0) {
+      alert("Please select slots to update.");
+      return;
+    }
+    try {
+      const promises = Array.from(selectedSlots).map((uniqueSlotId) => {
+        const slot = getSlotInfo(uniqueSlotId);
+        return slot
+          ? updateSlotStatus(uniqueSlotId, status, "bulk_action")
+          : Promise.resolve();
+      });
+      await Promise.all(promises);
+      await loadAllSlots();
+      setSelectedSlots(new Set());
+      setShowBulkActions(false);
+      alert("Bulk update complete.");
+    } catch (error) {
+      console.error("Failed to bulk update slot status:", error);
+      alert("Failed to update slot statuses. Please try again.");
     }
   };
 
@@ -274,22 +297,22 @@ const StaffParkingSlotManagement = () => {
                 <div className="bulk-buttons">
                   <button
                     className="bulk-btn available"
-                    onClick={() => alert("Focus on single-slot flow first 😊")}
-                    disabled
+                    onClick={() => handleBulkStatusUpdate("available")}
+                    disabled={selectedSlots.size === 0}
                   >
                     Set Available
                   </button>
                   <button
                     className="bulk-btn maintenance"
-                    onClick={() => alert("Focus on single-slot flow first 😊")}
-                    disabled
+                    onClick={() => handleBulkStatusUpdate("maintenance")}
+                    disabled={selectedSlots.size === 0}
                   >
                     Set Maintenance
                   </button>
                   <button
                     className="bulk-btn occupied"
-                    onClick={() => alert("Focus on single-slot flow first 😊")}
-                    disabled
+                    onClick={() => handleBulkStatusUpdate("occupied")}
+                    disabled={selectedSlots.size === 0}
                   >
                     Set Occupied
                   </button>
@@ -477,17 +500,14 @@ const StaffParkingSlotManagement = () => {
                     >
                       🔄 Reset to Automatic Control
                     </button>
-                    <p className="reset-note">
-                      This removes staff override (backend should set updatedBy
-                      = "System").
-                    </p>
+                    <p className="reset-note">This removes staff override.</p>
                   </div>
                 )}
               </div>
 
               <div className="modal-actions">
                 <button
-                  className="cancel-btn"
+                  className="staff-cancel-btn"
                   onClick={() => {
                     setEditingSlot(null);
                     setSelectedSlot(null);

@@ -7,6 +7,8 @@ const {
   DynamoDBDocumentClient,
   PutCommand,
   GetCommand,
+  ScanCommand,
+  DeleteCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
 const router = express.Router();
@@ -14,14 +16,16 @@ const router = express.Router();
 const client = new DynamoDBClient({
   region: process.env.AWS_REGION,
   credentials: {
-    accessKeyId: process.env.aws_access_key_id,
-    secretAccessKey: process.env.aws_secret_access_key,
-    sessionToken: process.env.aws_session_token,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    sessionToken: process.env.AWS_SESSION_TOKEN,
   },
 });
 
 const ddb = DynamoDBDocumentClient.from(client);
 const USERS_TABLE = "Users";
+const STAFF_TABLE = "Staff";
+const VEHICLE_TABLE = "Vehicle";
 
 function signToken(payload) {
   return jwt.sign(payload, process.env.JWT_SECRET, {
@@ -32,56 +36,168 @@ function signToken(payload) {
 //SIGNUP
 router.post("/signup", async (req, res) => {
   try {
-    const { email, password, plateNumber } = req.body || {};
+    console.log("1. Signup route hit");
+    const { email, password, firstName, lastName, carPlateNo } = req.body || {};
+    console.log("2. Extracted signup data:", {
+      email: email ? "present" : "missing",
+      password: password ? "present" : "missing",
+      firstName: firstName ? "present" : "missing",
+      lastName: lastName ? "present" : "missing",
+      carPlateNo: carPlateNo ? "present" : "missing",
+    });
+
     if (!email || !password)
       return res.status(400).json({ error: "Email and password are required" });
 
+    console.log("3. About to check if user already exists");
     //check if exists
     const existing = await ddb.send(
-      new GetCommand({ TableName: USERS_TABLE, Key: { email } })
+      new ScanCommand({
+        TableName: USERS_TABLE,
+        FilterExpression: "email = :email",
+        ExpressionAttributeValues: {
+          ":email": email,
+        },
+      })
     );
-    if (existing.Item)
+    console.log(
+      "4. User existence check completed, existing users found:",
+      existing.Items?.length || 0
+    );
+
+    if (existing.Items && existing.Items.length > 0)
       return res.status(409).json({ error: "Email already registered" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Vehicle validation if carPlateNo is provided
+    if (carPlateNo) {
+      console.log("4a. Car plate provided, validating vehicle:", carPlateNo);
 
-    const userId = uuidv4();
-    const now = Date.now();
+      try {
+        const vehicleCheck = await ddb.send(
+          new GetCommand({
+            TableName: VEHICLE_TABLE,
+            Key: { carPlateNo: carPlateNo },
+          })
+        );
+
+        console.log(
+          "4b. Vehicle check completed, vehicle exists:",
+          !!vehicleCheck.Item
+        );
+
+        if (vehicleCheck.Item) {
+          console.log("4c. Vehicle already exists in database");
+          return res.status(409).json({
+            error:
+              "This vehicle plate number is already registered in the system",
+          });
+        }
+
+        console.log("4d. Vehicle plate number is available for registration");
+      } catch (vehicleError) {
+        console.error("4e. Error checking vehicle:", vehicleError);
+        return res.status(500).json({ error: "Vehicle validation failed" });
+      }
+    }
+
+    console.log("5. About to hash password");
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("6. Password hashed successfully");
+
+    const userID = uuidv4();
+    console.log("7. Generated userID (partition key):", userID);
+
+    console.log("8. About to create user in DynamoDB");
+    const userItem = {
+      userID, // Partition key
+      email,
+      firstName: firstName || null,
+      lastName: lastName || null,
+      carPlateNo: carPlateNo || null,
+      password: hashedPassword, // Using 'password' as per your schema
+      walletBalance: 0, // Initialize wallet balance
+      role: "user", // Add role field to DynamoDB schema
+    };
+    console.log("8a. User item to create:", {
+      ...userItem,
+      password: "[HIDDEN]",
+    });
 
     await ddb.send(
       new PutCommand({
         TableName: USERS_TABLE,
-        Item: {
-          email,
-          userId,
-          passwordHash: hashedPassword,
-          role: "user",
-          plateNumber: plateNumber || null,
-          createdAt: now,
-        },
-        ConditionExpression: "attribute_not_exists(email)",
+        Item: userItem,
+        ConditionExpression: "attribute_not_exists(userID)", // Check userID doesn't exist
       })
     );
+    console.log("9. User created successfully in DynamoDB");
 
-    // optional: create default Users row if plate provided
-    // (only if your app needs a starting wallet row)
-    if (plateNumber) {
-      await ddb.send(
-        new PutCommand({
-          TableName: USERS_TABLE,
-          Item: { plateNumber, walletBalance: 0, status: "active" },
-          ConditionExpression: "attribute_not_exists(plateNumber)",
-        })
-      );
+    // Handle vehicle record if carPlateNo is provided
+    if (carPlateNo) {
+      console.log("9a. Creating vehicle record for new user");
+
+      try {
+        const vehicleItem = {
+          carPlateNo: carPlateNo, // Partition key
+          userID: userID,
+          registeredAt: new Date().toISOString(),
+        };
+
+        await ddb.send(
+          new PutCommand({
+            TableName: VEHICLE_TABLE,
+            Item: vehicleItem,
+            ConditionExpression: "attribute_not_exists(carPlateNo)", // Ensure no duplicate carPlateNo
+          })
+        );
+
+        console.log("9b. Vehicle record created successfully");
+      } catch (vehicleError) {
+        console.error("9c. Error creating vehicle record:", vehicleError);
+
+        // If vehicle creation fails, we should clean up the user record
+        // since we promised the vehicle would be registered
+        try {
+          await ddb.send(
+            new DeleteCommand({
+              TableName: USERS_TABLE,
+              Key: { userID: userID },
+            })
+          );
+          console.log(
+            "9d. Cleaned up user record due to vehicle creation failure"
+          );
+        } catch (cleanupError) {
+          console.error("9e. Failed to cleanup user record:", cleanupError);
+        }
+
+        return res.status(500).json({
+          error: "Failed to register vehicle. Please try again.",
+        });
+      }
     }
 
-    const token = signToken({ sub: userId, email, role: "user" });
+    console.log("10. About to sign token");
+    const token = signToken({ sub: userID, email, role: "user" });
+    console.log("11. Token signed successfully");
+
+    console.log("12. Sending signup response");
     res.status(201).json({
       token,
-      user: { userId, email, plateNumber: plateNumber || null, role: "user" },
+      user: {
+        userID,
+        email,
+        firstName: firstName || null,
+        lastName: lastName || null,
+        carPlateNo: carPlateNo || null,
+        role: "user",
+        walletBalance: 0,
+      },
     });
+    console.log("13. Signup response sent successfully");
   } catch (error) {
-    console.error("Error signing up:", error);
+    console.error("Signup error occurred at step:", error);
+    console.error("Full error details:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -90,36 +206,400 @@ router.post("/signup", async (req, res) => {
 //POST /api/auth/login
 router.post("/login", async (req, res) => {
   try {
+    console.log("1. Login route hit");
     const { email, password } = req.body || {};
+    console.log("2. Extracted email and password:", {
+      email: email ? "present" : "missing",
+      password: password ? "present" : "missing",
+    });
+
     if (!email || !password)
       return res.status(400).json({ error: "email and password required" });
 
-    const out = await ddb.send(
-      new GetCommand({ TableName: USERS_TABLE, Key: { email } })
+    console.log("3. About to query DynamoDB for user");
+    console.log("3a. Table name:", USERS_TABLE);
+    console.log("3b. Query email:", email);
+    console.log("3c. AWS Region:", process.env.AWS_REGION);
+    console.log(
+      "3d. AWS Access Key ID:",
+      process.env.AWS_ACCESS_KEY_ID ? "present" : "missing"
     );
-    const user = out.Item;
+
+    // Use Scan instead of Get since email might not be the primary key
+    const out = await ddb.send(
+      new ScanCommand({
+        TableName: USERS_TABLE,
+        FilterExpression: "email = :email",
+        ExpressionAttributeValues: {
+          ":email": email,
+        },
+      })
+    );
+    console.log(
+      "4. DynamoDB scan completed, items found:",
+      out.Items?.length || 0
+    );
+
+    const user = out.Items && out.Items.length > 0 ? out.Items[0] : null;
     if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
-    const ok = await bcrypt.compare(password, user.passwordHash);
+    console.log("5. About to compare password");
+    const ok = await bcrypt.compare(password, user.password); // Using 'password' field as per your schema
+    console.log("6. Password comparison result:", ok);
     if (!ok) return res.status(401).json({ error: "Invalid credentials" });
 
+    console.log("7. About to sign token");
     const token = signToken({
-      sub: user.userId,
+      sub: user.userID, // Using userID as per your schema
       email: user.email,
-      role: user.role || "user",
+      role: user.role || "user", // Use actual role from database
     });
+    console.log("8. Token signed successfully");
+
+    console.log("9. Sending response");
     res.json({
       token,
       user: {
-        userId: user.userId,
+        userID: user.userID,
         email: user.email,
-        plateNumber: user.plateNumber || null,
-        role: user.role || "user",
+        firstName: user.firstName || null,
+        lastName: user.lastName || null,
+        carPlateNo: user.carPlateNo || null,
+        walletBalance: user.walletBalance || 0,
+        role: user.role,
       },
     });
+    console.log("10. Response sent successfully");
   } catch (err) {
     console.log("login error:", err);
     res.status(500).json({ error: "Login failed liao" });
+  }
+});
+
+//STAFF LOGIN
+//POST /api/auth/stafflogin
+router.post("/stafflogin", async (req, res) => {
+  try {
+    console.log("1. Staff login route hit");
+    const { staffID, password } = req.body || {};
+    console.log("2. Extracted staffID and password:", {
+      staffID: staffID ? "present" : "missing",
+      password: password ? "present" : "missing",
+    });
+
+    if (!staffID || !password)
+      return res.status(400).json({ error: "staffID and password required" });
+
+    console.log("3. About to query DynamoDB for staff user");
+    console.log("3a. Table name:", STAFF_TABLE);
+    console.log("3b. Query staffID:", staffID);
+
+    // Use Scan to find user by email
+    const out = await ddb.send(
+      new ScanCommand({
+        TableName: STAFF_TABLE,
+        FilterExpression: "staffID = :staffID",
+        ExpressionAttributeValues: {
+          ":staffID": staffID,
+        },
+      })
+    );
+    console.log(
+      "4. DynamoDB scan completed, items found:",
+      out.Items?.length || 0
+    );
+
+    const user = out.Items && out.Items.length > 0 ? out.Items[0] : null;
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
+
+    console.log("4a. Full user object keys:", Object.keys(user));
+    console.log("4b. User object (password hidden):", {
+      ...user,
+      password: "[HIDDEN]",
+    });
+
+    console.log("5. User found, checking role:", user.role);
+    console.log("5a. Role type:", typeof user.role);
+    console.log("5b. Role exact value:", JSON.stringify(user.role));
+
+    // Check if user has staff role (case-insensitive)
+    const userRole = (user.role || "").toLowerCase();
+    console.log("5c. Normalized role:", userRole);
+
+    if (userRole !== "staff" && userRole !== "admin") {
+      console.log("6. Access denied - not staff/admin, found role:", userRole);
+      return res
+        .status(403)
+        .json({ error: "Access denied. Staff credentials required." });
+    }
+
+    console.log("6. Role check passed for:", userRole);
+
+    console.log("7. About to compare password");
+    const ok = await bcrypt.compare(password, user.password);
+    console.log("8. Password comparison result:", ok);
+    if (!ok) return res.status(401).json({ error: "Invalid credentials" });
+
+    console.log("9. About to sign token");
+    const token = signToken({
+      sub: user.staffID || user.userID, // Use staffID if available, fallback to userID
+      email: user.email,
+      role: user.role,
+    });
+    console.log("10. Token signed successfully");
+
+    console.log("11. Sending staff login response");
+    res.json({
+      token,
+      user: {
+        staffID: user.staffID,
+        staffName: user.staffName || "",
+        password: user.password || "",
+        walletBalance: user.walletBalance || 0,
+        status: user.status || "active",
+        role: user.role,
+      },
+    });
+    console.log("12. Staff login response sent successfully");
+  } catch (err) {
+    console.log("Staff login error:", err);
+    res.status(500).json({ error: "Staff login failed" });
+  }
+});
+
+// GET USER PROFILE
+// GET /api/auth/profile
+router.get("/profile", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.sub;
+
+    console.log("Getting profile for user:", userId);
+
+    const userResult = await ddb.send(
+      new GetCommand({
+        TableName: USERS_TABLE,
+        Key: { userID: userId },
+      })
+    );
+
+    if (!userResult.Item) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const user = userResult.Item;
+    res.json({
+      userID: user.userID,
+      email: user.email,
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      carPlateNo: user.carPlateNo || "",
+      role: user.role || "user",
+      walletBalance: user.walletBalance || 0,
+    });
+  } catch (error) {
+    console.error("Get profile error:", error);
+    res.status(500).json({ error: "Failed to get profile" });
+  }
+});
+
+// UPDATE USER PROFILE
+// PUT /api/auth/profile
+router.put("/profile", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.sub;
+
+    const { firstName, lastName, email, password } = req.body;
+
+    console.log("Updating profile for user:", userId);
+
+    // Get current user data
+    const userResult = await ddb.send(
+      new GetCommand({
+        TableName: USERS_TABLE,
+        Key: { userID: userId },
+      })
+    );
+
+    if (!userResult.Item) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Email validation if email is being updated
+    if (email !== undefined && email !== userResult.Item.email) {
+      console.log("Email is being changed, validating uniqueness:", email);
+
+      // Check if email exists for another user
+      const emailCheck = await ddb.send(
+        new ScanCommand({
+          TableName: USERS_TABLE,
+          FilterExpression: "email = :email AND userID <> :currentUserId",
+          ExpressionAttributeValues: {
+            ":email": email,
+            ":currentUserId": userId,
+          },
+        })
+      );
+
+      if (emailCheck.Items && emailCheck.Items.length > 0) {
+        console.log("Email already exists for another user");
+        return res.status(409).json({
+          error: "This email is already registered to another user",
+        });
+      }
+
+      console.log("Email validation passed, email is available");
+    }
+
+    // Prepare update data
+    const updateData = {
+      userID: userId,
+      ...userResult.Item, // Keep existing data
+    };
+
+    // Update only provided fields
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (email !== undefined) updateData.email = email;
+
+    // Hash password if provided
+    if (password && password.trim() !== "") {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    await ddb.send(
+      new PutCommand({
+        TableName: USERS_TABLE,
+        Item: updateData,
+      })
+    );
+
+    // Return updated user data (excluding password)
+    const { password: _, ...userResponse } = updateData;
+    res.json({
+      message: "Profile updated successfully",
+      user: userResponse,
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
+// GET STAFF PROFILE
+// GET /api/auth/staff-profile
+router.get("/staff-profile", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const staffId = decoded.sub;
+
+    console.log("Getting staff profile for:", staffId);
+
+    const staffResult = await ddb.send(
+      new GetCommand({
+        TableName: STAFF_TABLE,
+        Key: { staffID: staffId },
+      })
+    );
+
+    if (!staffResult.Item) {
+      return res.status(404).json({ error: "Staff member not found" });
+    }
+
+    const staff = staffResult.Item;
+    res.json({
+      staffID: staff.staffID,
+      staffName: staff.staffName || "",
+      role: staff.role || "staff",
+      status: staff.status || "active",
+      walletBalance: staff.walletBalance || 0,
+    });
+  } catch (error) {
+    console.error("Get staff profile error:", error);
+    res.status(500).json({ error: "Failed to get staff profile" });
+  }
+});
+
+// UPDATE STAFF PROFILE
+// PUT /api/auth/staff-profile
+router.put("/staff-profile", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const staffId = decoded.sub;
+
+    const { staffName, password, walletBalance } = req.body;
+
+    console.log("Updating staff profile for:", staffId);
+
+    // Get current staff data
+    const staffResult = await ddb.send(
+      new GetCommand({
+        TableName: STAFF_TABLE,
+        Key: { staffID: staffId },
+      })
+    );
+
+    if (!staffResult.Item) {
+      return res.status(404).json({ error: "Staff member not found" });
+    }
+
+    // Prepare update data
+    const updateData = {
+      staffID: staffId,
+      ...staffResult.Item, // Keep existing data
+    };
+
+    // Update only provided fields
+    if (staffName !== undefined) updateData.staffName = staffName;
+    if (walletBalance !== undefined)
+      updateData.walletBalance = parseFloat(walletBalance);
+
+    // Hash password if provided
+    if (password && password.trim() !== "") {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    await ddb.send(
+      new PutCommand({
+        TableName: STAFF_TABLE,
+        Item: updateData,
+      })
+    );
+
+    // Return updated staff data (excluding password)
+    const { password: _, ...staffResponse } = updateData;
+    res.json({
+      message: "Staff profile updated successfully",
+      staff: staffResponse,
+    });
+  } catch (error) {
+    console.error("Update staff profile error:", error);
+    res.status(500).json({ error: "Failed to update staff profile" });
   }
 });
 
