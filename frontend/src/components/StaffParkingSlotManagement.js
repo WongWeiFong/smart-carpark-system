@@ -328,6 +328,78 @@ const StaffParkingSlotManagement = () => {
           </div>
         </div>
 
+        {/* Search Results Container */}
+        {(searchTerm || statusFilter !== "all") && (
+          <div className="search-results-section">
+            <div className="search-results-card">
+              <div className="search-results-header">
+                <h3>
+                  🔍 Search Results
+                  {searchTerm && (
+                    <span className="search-term">for "{searchTerm}"</span>
+                  )}
+                  {statusFilter !== "all" && (
+                    <span className="filter-term">({statusFilter} slots)</span>
+                  )}
+                </h3>
+                <div className="results-count">
+                  {filteredSlots.length} slot
+                  {filteredSlots.length !== 1 ? "s" : ""} found
+                </div>
+              </div>
+
+              <div className="search-results-grid">
+                {filteredSlots.length > 0 ? (
+                  filteredSlots.map((slot) => (
+                    <div
+                      key={`${slot.section}-${slot.number}`}
+                      className={`search-result-item ${slot.effectiveStatus} ${
+                        slot.staffControlled ? "staff-controlled" : ""
+                      }`}
+                      onClick={() =>
+                        handleSlotClick(`${slot.section}-${slot.number}`)
+                      }
+                    >
+                      <div className="result-slot-id">
+                        {slot.section}-{slot.number}
+                      </div>
+                      <div className="result-slot-info">
+                        <span
+                          className={`result-status ${slot.effectiveStatus}`}
+                        >
+                          {title(slot.effectiveStatus)}
+                        </span>
+                        <span className="result-section">
+                          Section {slot.section}
+                        </span>
+                        {slot.staffControlled && (
+                          <span className="result-staff-badge">👤 Staff</span>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="no-results">
+                    <div className="no-results-icon">🔍</div>
+                    <div className="no-results-text">
+                      No slots found matching your search criteria
+                    </div>
+                    <button
+                      className="clear-search-btn"
+                      onClick={() => {
+                        setSearchTerm("");
+                        setStatusFilter("all");
+                      }}
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Interactive Parking Layout */}
         <div className="enhanced-layout-section">
           <h3>🎯 Interactive Parking Layout - Staff Mode</h3>
