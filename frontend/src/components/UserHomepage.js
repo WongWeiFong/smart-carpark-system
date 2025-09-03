@@ -96,12 +96,12 @@ const UserHomepage = () => {
             </Link>
           </div>
 
-          <div className="dashboard-card">
+          {/* <div className="dashboard-card">
             <div className="card-icon">🎫</div>
             <h3>My Bookings</h3>
             <p>View and manage your parking reservations</p>
             <button className="card-button">View Bookings</button>
-          </div>
+          </div> */}
 
           <div className="dashboard-card">
             <div className="card-icon">⚙️</div>

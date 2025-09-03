@@ -85,17 +85,17 @@ const ParkingLayoutCanvas = ({
       slotWidth: 30,
       slotHeight: 40,
     },
-    {
-      id: "Mall",
-      name: "Mall",
-      x: 380,
-      y: 380,
-      rows: 1,
-      cols: 1,
-      startNumber: 1,
-      slotWidth: 375,
-      slotHeight: 84,
-    },
+    // {
+    //   id: "Mall",
+    //   name: "Mall",
+    //   x: 380,
+    //   y: 380,
+    //   rows: 1,
+    //   cols: 1,
+    //   startNumber: 1,
+    //   slotWidth: 375,
+    //   slotHeight: 84,
+    // },
     {
       id: "ME",
       name: "Mall East",
@@ -196,7 +196,7 @@ const ParkingLayoutCanvas = ({
       case "maintenance":
         return "#6c757d";
       default:
-        return "#28a745"; // pure white for available
+        return "#28a745";
     }
   };
 
@@ -381,6 +381,32 @@ const ParkingLayoutCanvas = ({
 
   const renderEntranceExit = () => (
     <Group>
+      <Group x={372} y={382}>
+        <Rect
+          width={386}
+          height={126}
+          fill="white"
+          stroke="grey"
+          strokeWidth={2}
+          cornerRadius={15}
+          listening={false}
+        />
+        <Text
+          x={0}
+          y={0}
+          text="MALL"
+          fontSize={50}
+          fontFamily="Arial"
+          fontStyle="bold"
+          fill="black"
+          width={270}
+          height={130}
+          align="right"
+          verticalAlign="middle"
+          listening={false}
+        />
+      </Group>
+
       {/* Entry 1 */}
       <Group x={width / 6 - 60} y={20}>
         <Rect

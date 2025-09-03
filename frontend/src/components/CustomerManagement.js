@@ -1,3 +1,4 @@
+// src/pages/CustomerManagement.js
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -8,6 +9,8 @@ const CustomerManagement = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { getAllCustomers, searchCustomers, loading } = useCustomer();
+
+  const [allCustomers, setAllCustomers] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -16,55 +19,60 @@ const CustomerManagement = () => {
   const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
-    try {
-      const allCustomers = getAllCustomers();
-      setCustomers(allCustomers);
-    } catch (error) {
-      console.error("Error loading customers:", error);
-    }
-  }, [getAllCustomers]);
+    loadAllCustomers();
+    // Optional: auto-refresh interval like parking
+    // const id = setInterval(loadAllCustomers, 30000);
+    // return () => clearInterval(id);
+  }, []);
 
-  const handleSearch = (term) => {
-    setSearchTerm(term);
+  const loadAllCustomers = async () => {
     try {
-      const filteredCustomers = searchCustomers(term);
-      setCustomers(filteredCustomers);
-    } catch (error) {
-      console.error("Error searching customers:", error);
+      const data = await getAllCustomers();
+      setAllCustomers(data);
+      setCustomers(data);
+    } catch (err) {
+      console.error("Failed to load customers:", err);
+      alert("Failed to load customers. Please try again.");
     }
   };
 
+  const handleRefreshCustomers = async () => {
+    await loadAllCustomers();
+  };
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    const filtered = searchCustomers(allCustomers, term);
+    setCustomers(filtered);
+  };
+
   const handleSort = (column) => {
-    if (sortBy === column) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
+    if (sortBy === column) setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    else {
       setSortBy(column);
       setSortOrder("asc");
     }
-
     const sorted = [...customers].sort((a, b) => {
       let aValue = a[column];
       let bValue = b[column];
-
-      // Handle different data types
-      if (column === "registeredDate" || column === "lastActivity") {
+      if (column === "createdAt") {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
-      } else if (column === "accountBalance" || column === "totalSpent") {
+      } else if (column === "walletBalance") {
         aValue = parseFloat(aValue);
         bValue = parseFloat(bValue);
       } else {
-        aValue = aValue.toString().toLowerCase();
-        bValue = bValue.toString().toLowerCase();
+        aValue = (aValue ?? "").toString().toLowerCase();
+        bValue = (bValue ?? "").toString().toLowerCase();
       }
-
-      if (sortOrder === "asc") {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
+      return sortOrder === "asc"
+        ? aValue > bValue
+          ? 1
+          : -1
+        : aValue < bValue
+        ? 1
+        : -1;
     });
-
     setCustomers(sorted);
   };
 
@@ -78,20 +86,18 @@ const CustomerManagement = () => {
     setSelectedCustomer(null);
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-  };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-    }).format(amount);
-  };
+    }).format(amount || 0);
 
   const getStatusBadge = (status) => {
     const statusClass =
@@ -102,15 +108,13 @@ const CustomerManagement = () => {
         : "status-inactive";
     return (
       <span className={`status-badge ${statusClass}`}>
-        {status.toUpperCase()}
+        {status?.toUpperCase()}
       </span>
     );
   };
 
-  const getSortIcon = (column) => {
-    if (sortBy !== column) return "⇅";
-    return sortOrder === "asc" ? "↑" : "↓";
-  };
+  const getSortIcon = (column) =>
+    sortBy !== column ? "⇅" : sortOrder === "asc" ? "↑" : "↓";
 
   if (loading) {
     return (
@@ -143,24 +147,37 @@ const CustomerManagement = () => {
 
       <div className="customer-content">
         <div className="search-controls">
-          <div className="search-bar">
-            <input
-              type="text"
-              placeholder="Search customers by name, email, or ID..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="search-input"
-            />
-            <span className="search-icon">🔍</span>
+          <div className="search-section">
+            <div className="search-bar">
+              <input
+                type="text"
+                placeholder="Search customers by name, email, ID, car plate, or role..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="search-input"
+              />
+              <span className="search-icon">🔍</span>
+            </div>
+            <button
+              onClick={handleRefreshCustomers}
+              disabled={loading}
+              className="refresh-btn"
+              title="Refresh"
+            >
+              {loading ? "🔄" : "🔄"} {loading ? "Loading..." : "Refresh"}
+            </button>
           </div>
+
           <div className="customer-stats">
             <span className="stat">Total Customers: {customers.length}</span>
             <span className="stat">
               Active: {customers.filter((c) => c.status === "active").length}
             </span>
             <span className="stat">
-              Suspended:{" "}
-              {customers.filter((c) => c.status === "suspended").length}
+              Users: {customers.filter((c) => c.role === "user").length}
+            </span>
+            <span className="stat">
+              Staff: {customers.filter((c) => c.role === "staff").length}
             </span>
           </div>
         </div>
@@ -169,35 +186,35 @@ const CustomerManagement = () => {
           <table className="customers-table">
             <thead>
               <tr>
-                <th onClick={() => handleSort("id")} className="sortable">
-                  Customer ID {getSortIcon("id")}
+                <th onClick={() => handleSort("userID")} className="sortable">
+                  User ID {getSortIcon("userID")}
                 </th>
                 <th onClick={() => handleSort("name")} className="sortable">
-                  Name {getSortIcon("name")}
+                  Full Name {getSortIcon("name")}
                 </th>
                 <th onClick={() => handleSort("email")} className="sortable">
                   Email {getSortIcon("email")}
                 </th>
-                <th
-                  onClick={() => handleSort("registeredDate")}
-                  className="sortable"
-                >
-                  Registered Date {getSortIcon("registeredDate")}
+                <th onClick={() => handleSort("carPlate")} className="sortable">
+                  Car Plate {getSortIcon("carPlate")}
+                </th>
+                <th onClick={() => handleSort("role")} className="sortable">
+                  Role {getSortIcon("role")}
                 </th>
                 <th onClick={() => handleSort("status")} className="sortable">
                   Status {getSortIcon("status")}
                 </th>
                 <th
-                  onClick={() => handleSort("accountBalance")}
+                  onClick={() => handleSort("walletBalance")}
                   className="sortable"
                 >
-                  Balance {getSortIcon("accountBalance")}
+                  Wallet Balance {getSortIcon("walletBalance")}
                 </th>
                 <th
-                  onClick={() => handleSort("lastActivity")}
+                  onClick={() => handleSort("createdAt")}
                   className="sortable"
                 >
-                  Last Activity {getSortIcon("lastActivity")}
+                  Created Date {getSortIcon("createdAt")}
                 </th>
                 <th>Actions</th>
               </tr>
@@ -205,32 +222,35 @@ const CustomerManagement = () => {
             <tbody>
               {customers.map((customer) => (
                 <tr key={customer.id} className="customer-row">
-                  <td className="customer-id">{customer.id}</td>
+                  <td className="customer-id">{customer.userID}</td>
                   <td className="customer-name">{customer.name}</td>
                   <td className="customer-email">{customer.email}</td>
-                  <td className="registered-date">
-                    {formatDate(customer.registeredDate)}
+                  <td className="car-plate">{customer.carPlate}</td>
+                  <td className="customer-role">
+                    <span className={`role-badge role-${customer.role}`}>
+                      {customer.role?.toUpperCase()}
+                    </span>
                   </td>
                   <td className="customer-status">
                     {getStatusBadge(customer.status)}
                   </td>
                   <td
-                    className={`account-balance ${
-                      customer.accountBalance < 0 ? "negative" : "positive"
+                    className={`wallet-balance ${
+                      customer.walletBalance < 0 ? "negative" : "positive"
                     }`}
                   >
-                    {formatCurrency(customer.accountBalance)}
+                    {formatCurrency(customer.walletBalance)}
                   </td>
-                  <td className="last-activity">
-                    {formatDate(customer.lastActivity)}
+                  <td className="registered-date">
+                    {formatDate(customer.createdAt)}
                   </td>
                   <td className="actions">
                     <button
                       onClick={() => handleViewCustomer(customer)}
                       className="view-btn"
-                      title="View customer details"
+                      title="View & edit"
                     >
-                      👁️ View
+                      ✏️ Edit
                     </button>
                   </td>
                 </tr>
@@ -250,12 +270,10 @@ const CustomerManagement = () => {
         <CustomerDetailModal
           customer={selectedCustomer}
           onClose={handleCloseModal}
-          onUpdate={(updatedCustomer) => {
-            setCustomers(
-              customers.map((c) =>
-                c.id === updatedCustomer.id ? updatedCustomer : c
-              )
-            );
+          onUpdate={async () => {
+            await loadAllCustomers();
+            setShowModal(false);
+            setSelectedCustomer(null);
           }}
         />
       )}
@@ -263,32 +281,47 @@ const CustomerManagement = () => {
   );
 };
 
-// Customer Detail Modal Component
 const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
-  const { updateCustomer, loading } = useCustomer();
+  const { updateCustomer } = useCustomer();
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState(customer);
   const [updateLoading, setUpdateLoading] = useState(false);
-  const [showVehicles, setShowVehicles] = useState(false);
+  // const [showVehicles, setShowVehicles] = useState(false);
   const [showBalanceStatement, setShowBalanceStatement] = useState(false);
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: value };
+      if (field === "firstName" || field === "lastName") {
+        const firstName = field === "firstName" ? value : prev.firstName;
+        const lastName = field === "lastName" ? value : prev.lastName;
+        updated.name =
+          [firstName, lastName].filter(Boolean).join(" ").trim() || "—";
+      }
+      if (field === "walletBalance") updated.accountBalance = value;
+      return updated;
+    });
   };
 
   const handleSave = async () => {
     setUpdateLoading(true);
     try {
-      await updateCustomer(customer.id, formData);
-      onUpdate(formData);
+      const updatePayload = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        carPlateNo: formData.carPlate,
+        status: formData.status,
+        walletBalance: parseFloat(formData.walletBalance) || 0,
+        role: formData.role,
+      };
+      await updateCustomer(customer.id, updatePayload);
       setEditMode(false);
       alert("Customer updated successfully!");
+      onUpdate();
     } catch (error) {
-      console.error("Error updating customer:", error);
-      alert("Error updating customer. Please try again.");
+      console.error("Error updating customer11:", error);
+      alert(`Error updating customer12: ${error.message}`);
     } finally {
       setUpdateLoading(false);
     }
@@ -299,12 +332,11 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
     setEditMode(false);
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-    }).format(amount);
-  };
+    }).format(amount || 0);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -339,23 +371,45 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
         <div className="modal-body">
           <div className="customer-details-grid">
             <div className="detail-group">
-              <label>Customer ID</label>
+              <label>User ID</label>
               <input
                 type="text"
-                value={formData.id}
+                value={formData.userID || formData.id}
                 disabled
                 className="detail-input"
               />
             </div>
 
             <div className="detail-group">
-              <label>Full Name</label>
+              <label>First Name</label>
+              <input
+                type="text"
+                value={formData.firstName || ""}
+                onChange={(e) => handleInputChange("firstName", e.target.value)}
+                disabled={!editMode}
+                className="detail-input"
+              />
+            </div>
+
+            <div className="detail-group">
+              <label>Last Name</label>
+              <input
+                type="text"
+                value={formData.lastName || ""}
+                onChange={(e) => handleInputChange("lastName", e.target.value)}
+                disabled={!editMode}
+                className="detail-input"
+              />
+            </div>
+
+            <div className="detail-group">
+              <label>Full Name (Display)</label>
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                disabled={!editMode}
+                disabled
                 className="detail-input"
+                style={{ fontStyle: "italic", color: "#666" }}
               />
             </div>
 
@@ -371,25 +425,27 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
             </div>
 
             <div className="detail-group">
-              <label>Phone Number</label>
+              <label>Car Plate Number</label>
               <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
+                type="text"
+                value={formData.carPlate || ""}
+                onChange={(e) => handleInputChange("carPlate", e.target.value)}
                 disabled={!editMode}
                 className="detail-input"
               />
             </div>
 
-            <div className="detail-group full-width">
-              <label>Address</label>
-              <input
-                type="text"
-                value={formData.address}
-                onChange={(e) => handleInputChange("address", e.target.value)}
+            <div className="detail-group">
+              <label>Role</label>
+              <select
+                value={formData.role || "user"}
+                onChange={(e) => handleInputChange("role", e.target.value)}
                 disabled={!editMode}
-                className="detail-input"
-              />
+                className="detail-select"
+              >
+                <option value="user">User</option>
+                <option value="staff">Staff</option>
+              </select>
             </div>
 
             <div className="detail-group">
@@ -407,91 +463,43 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
             </div>
 
             <div className="detail-group">
-              <label>Membership Type</label>
-              <select
-                value={formData.membershipType}
-                onChange={(e) =>
-                  handleInputChange("membershipType", e.target.value)
-                }
-                disabled={!editMode}
-                className="detail-select"
-              >
-                <option value="standard">Standard</option>
-                <option value="premium">Premium</option>
-                <option value="corporate">Corporate</option>
-              </select>
-            </div>
-
-            {/* <div className="detail-group">
-              <label>Account Balance</label>
+              <label>Wallet Balance</label>
               <input
                 type="number"
                 step="0.01"
-                value={formData.accountBalance}
-                onChange={(e) => handleInputChange('accountBalance', parseFloat(e.target.value) || 0)}
-                disabled={!editMode}
-                className="detail-input"
-              />
-            </div> */}
-            <div className="detail-group">
-              <label>Account Balance</label>
-              <input
-                type="text"
-                value={formatCurrency(formData.accountBalance)}
-                disabled
-                className="detail-input"
-              />
-            </div>
-
-            <div className="detail-group">
-              <label>Total Spent</label>
-              <input
-                type="text"
-                value={formatCurrency(formData.totalSpent)}
-                disabled
-                className="detail-input"
-              />
-            </div>
-
-            <div className="detail-group">
-              <label>Total Parking Sessions</label>
-              <input
-                type="text"
-                value={formData.totalParkingSessions}
-                disabled
-                className="detail-input"
-              />
-            </div>
-
-            <div className="detail-group">
-              <label>Registered Date</label>
-              <input
-                type="text"
-                value={new Date(formData.registeredDate).toLocaleDateString()}
-                disabled
-                className="detail-input"
-              />
-            </div>
-
-            <div className="detail-group">
-              <label>Last Activity</label>
-              <input
-                type="text"
-                value={new Date(formData.lastActivity).toLocaleDateString()}
-                disabled
-                className="detail-input"
-              />
-            </div>
-
-            <div className="detail-group full-width">
-              <label>Emergency Contact</label>
-              <input
-                type="text"
-                value={formData.emergencyContact}
+                value={formData.walletBalance || 0}
                 onChange={(e) =>
-                  handleInputChange("emergencyContact", e.target.value)
+                  handleInputChange(
+                    "walletBalance",
+                    parseFloat(e.target.value) || 0
+                  )
                 }
                 disabled={!editMode}
+                className="detail-input"
+              />
+            </div>
+
+            <div className="detail-group">
+              <label>Wallet Balance (Display)</label>
+              <input
+                type="text"
+                value={formatCurrency(formData.walletBalance || 0)}
+                disabled
+                className="detail-input"
+                style={{ fontStyle: "italic", color: "#666" }}
+              />
+            </div>
+
+            <div className="detail-group">
+              <label>Created Date</label>
+              <input
+                type="text"
+                value={
+                  formData.createdAt
+                    ? new Date(formData.createdAt).toLocaleDateString()
+                    : "—"
+                }
+                disabled
                 className="detail-input"
               />
             </div>
@@ -499,22 +507,23 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
             <div className="detail-group full-width">
               <label>Notes</label>
               <textarea
-                value={formData.notes}
+                value={formData.notes || ""}
                 onChange={(e) => handleInputChange("notes", e.target.value)}
                 disabled={!editMode}
                 className="detail-textarea"
                 rows="3"
+                placeholder="Add any notes about this user..."
               />
             </div>
           </div>
 
           <div className="customer-actions">
-            <button
+            {/* <button
               onClick={() => setShowVehicles(true)}
               className="action-btn vehicles-btn"
             >
               🚗 View Vehicles ({customer.vehicles?.length || 0})
-            </button>
+            </button> */}
             <button
               onClick={() => setShowBalanceStatement(true)}
               className="action-btn balance-btn"
@@ -525,12 +534,12 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
         </div>
       </div>
 
-      {showVehicles && (
+      {/* {showVehicles && (
         <CustomerVehicles
           customer={customer}
           onClose={() => setShowVehicles(false)}
         />
-      )}
+      )} */}
 
       {showBalanceStatement && (
         <CustomerBalanceStatement
@@ -848,7 +857,7 @@ const CustomerVehicles = ({ customer, onClose }) => {
                       </span>
                     </td>
                     <td className="registered-date">
-                      {formatDate(vehicle.registeredDate)}
+                      {formatDate(vehicle.createdAt)}
                     </td>
                     <td className="actions">
                       <button

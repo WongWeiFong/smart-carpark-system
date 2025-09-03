@@ -25,7 +25,7 @@ const app = express();
 app.use(
   cors({
     origin: ["http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -51,6 +51,9 @@ app.get("/api/test", (_req, res) => {
 
 // Mount auth router at a RELATIVE path (not a full URL)
 app.use("/api/auth", require("./routes/auth"));
+
+const customerRoutes = require("./routes/customers");
+app.use("/api/customers", customerRoutes);
 
 // Mount parking router
 app.use("/api/parking", require("./routes/parking"));
