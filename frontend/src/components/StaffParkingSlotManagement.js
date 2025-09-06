@@ -20,7 +20,7 @@ const StaffParkingSlotManagement = () => {
   const [newStatus, setNewStatus] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showBulkActions, setShowBulkActions] = useState(false);
+  const [showBulkActions, setShowBulkActions] = useState(true);
   const [selectedSlots, setSelectedSlots] = useState(new Set());
 
   const toLowerStatus = (s) => (s || "").toLowerCase();
@@ -403,6 +403,41 @@ const StaffParkingSlotManagement = () => {
         {/* Interactive Parking Layout */}
         <div className="enhanced-layout-section">
           <h3>🎯 Interactive Parking Layout - Staff Mode</h3>
+          {/* Legend */}
+          <div className="parking-layout-canvas">
+            <div className="canvas-legend">
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: "#28a745" }}
+                ></div>
+                <span>Available</span>
+              </div>
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: "#dc3545" }}
+                ></div>
+                <span>Occupied</span>
+              </div>
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: "#6c757d" }}
+                ></div>
+                <span>Maintenance</span>
+              </div>
+              {/* {ParkingLayoutCanvas.staffMode && showBulkActions && (
+                <div className="legend-item">
+                  <div
+                    className="legend-color"
+                    style={{ backgroundColor: "#ff9500" }}
+                  ></div>
+                  <span>Bulk Selected</span>
+                </div>
+              )} */}
+            </div>
+          </div>
           <KonvaErrorBoundary>
             <ParkingLayoutCanvas
               slots={toCanvasSlots(allSlots)}

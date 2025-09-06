@@ -1,4 +1,3 @@
-// routes/parking.js
 const express = require("express");
 const router = express.Router();
 const { docClient } = require("../lib/dynamoClient");

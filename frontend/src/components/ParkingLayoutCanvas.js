@@ -99,7 +99,7 @@ const ParkingLayoutCanvas = ({
     {
       id: "ME",
       name: "Mall East",
-      x: 770,
+      x: 775,
       y: 380,
       rows: 2,
       cols: 5,
@@ -383,7 +383,7 @@ const ParkingLayoutCanvas = ({
     <Group>
       <Group x={372} y={382}>
         <Rect
-          width={386}
+          width={391}
           height={126}
           fill="white"
           stroke="grey"
@@ -540,7 +540,7 @@ const ParkingLayoutCanvas = ({
       </div> */}
 
       {/* Legend */}
-      <div className="canvas-legend">
+      {/* <div className="canvas-legend">
         <div className="legend-item">
           <div
             className="legend-color"
@@ -586,7 +586,7 @@ const ParkingLayoutCanvas = ({
             <span>Bulk Selected</span>
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Konva Stage */}
       <div className="canvas-container" ref={containerRef}>

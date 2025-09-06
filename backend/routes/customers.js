@@ -1,5 +1,3 @@
-// routes/customers.js
-// CHANGED: Reuse the same shared DynamoDB DocumentClient (docClient) used by parking routes
 const express = require("express");
 const router = express.Router();
 const { docClient } = require("../lib/dynamoClient"); // CHANGED: same as routes/parking.js

@@ -69,8 +69,8 @@ const StaffHomepage = () => {
             <h3>Manage user's parking</h3>
             <p>View and manage customer's vehicle current parking slot</p>
             <Link
-              to="/parking"
-              className="card-button demo-button"
+              to="/staff/vehicle-slots"
+              className="card-button staff-button"
               style={{
                 textDecoration: "none",
                 display: "block",
@@ -80,6 +80,7 @@ const StaffHomepage = () => {
               Manage Parking
             </Link>
           </div>
+
           <div className="dashboard-card staff-card">
             <div className="card-icon">🎯</div>
             <h3>Staff Settings</h3>

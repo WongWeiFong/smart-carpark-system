@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { useCars } from "../contexts/CarContext";
-import { useParking } from "../contexts/ParkingContext";
+import { useAuth } from "../../../frontend/src/contexts/AuthContext";
+import { useCars } from "../../../frontend/src/contexts/CarContext";
+import { useParking } from "../../../frontend/src/contexts/ParkingContext";
 import "./ParkingComponents.css";
 
 const ParkingManagement = () => {

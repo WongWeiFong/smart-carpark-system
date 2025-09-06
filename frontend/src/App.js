@@ -8,6 +8,7 @@ import {
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CarProvider } from "./contexts/CarContext";
 import { ParkingProvider } from "./contexts/ParkingContext";
+import { VehicleProvider } from "./contexts/VehicleContext";
 import { CustomerProvider } from "./contexts/CustomerContext";
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -17,11 +18,11 @@ import CarList from "./components/CarList";
 import CarDetails from "./components/CarDetails";
 import AddCar from "./components/AddCar";
 import ParkingHistory from "./components/ParkingHistory";
-import ParkingSlot from "./components/ParkingSlot"; //for user to view which slot is empty
-// import EnhancedParkingSlot from "./components/EnhancedParkingSlot";
 import ParkingLayoutDemo from "./components/ParkingLayoutDemo"; //edit car plate for self view
+import ParkingSlot from "./components/ParkingSlot"; //for user to view which slot is empty
 import StaffParkingSlotManagement from "./components/StaffParkingSlotManagement"; //staff edit parking slot for availability
-// import ParkingManagement from "./components/ParkingManagement";                      //self edit car everything
+import VehicleSlotManagement from "./components/VehicleSlotManagement"; //user edit vehicle parking slot
+import StaffVehicleSlotManagement from "./components/StaffVehicleSlotManagement"; //staff edit vehicle parking slot
 import PaymentHistory from "./components/PaymentHistory";
 import RevenueManagement from "./components/RevenueManagement";
 import CustomerManagement from "./components/CustomerManagement";
@@ -31,6 +32,8 @@ import UserSettings from "./components/UserSettings";
 import StaffSettings from "./components/StaffSettings";
 import EmergencyManagement from "./components/EmergencyManagement";
 import "./App.css";
+// import ParkingManagement from "./components/ParkingManagement";                      //self edit car everything
+// import EnhancedParkingSlot from "./components/EnhancedParkingSlot";
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
@@ -154,18 +157,34 @@ function AppContent() {
           }
         /> */}
         <Route
-          path="/parking-slot"
-          element={
-            <ProtectedRoute>
-              <ParkingSlot />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/parking"
           element={
             <ProtectedRoute>
               <ParkingLayoutDemo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vehicle-slots"
+          element={
+            <ProtectedRoute>
+              <VehicleSlotManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/vehicle-slots"
+          element={
+            <ProtectedRoute>
+              <StaffVehicleSlotManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/parking-slots"
+          element={
+            <ProtectedRoute>
+              <ParkingSlot />
             </ProtectedRoute>
           }
         />
@@ -259,11 +278,13 @@ function App() {
     <AuthProvider>
       <CarProvider>
         <ParkingProvider>
-          <CustomerProvider>
-            <Router>
-              <AppContent />
-            </Router>
-          </CustomerProvider>
+          <VehicleProvider>
+            <CustomerProvider>
+              <Router>
+                <AppContent />
+              </Router>
+            </CustomerProvider>
+          </VehicleProvider>
         </ParkingProvider>
       </CarProvider>
     </AuthProvider>

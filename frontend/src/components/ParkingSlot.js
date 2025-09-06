@@ -7,14 +7,6 @@ import KonvaErrorBoundary from "./KonvaErrorBoundary";
 import "./ParkingComponents.css";
 import "./StaffParkingManagement.css";
 
-/**
- * ParkingSlot is a view‑only component that displays the current state
- * of the parking lot without any staff controls. It fetches the
- * parking slot data from the ParkingContext and renders the
- * interactive layout using ParkingLayoutCanvas. Users can hover
- * over slots to see their details, but they cannot modify the
- * slot statuses.
- */
 const ParkingSlot = () => {
   const { user, logout } = useAuth();
   const { getAllParkingSlots } = useParking();
@@ -123,6 +115,32 @@ const ParkingSlot = () => {
 
         {/* Parking Layout Canvas */}
         <div className="parking-layout-wrapper">
+          {/* Legend */}
+          <div className="parking-layout-canvas">
+            <div className="canvas-legend">
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: "#28a745" }}
+                ></div>
+                <span>Available</span>
+              </div>
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: "#dc3545" }}
+                ></div>
+                <span>Occupied</span>
+              </div>
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: "#6c757d" }}
+                ></div>
+                <span>Maintenance</span>
+              </div>
+            </div>
+          </div>
           <KonvaErrorBoundary>
             <ParkingLayoutCanvas
               slots={toCanvasSlots(slots)}

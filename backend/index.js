@@ -58,6 +58,8 @@ app.use("/api/customers", customerRoutes);
 // Mount parking router
 app.use("/api/parking", require("./routes/parking"));
 
+app.use("/api/vehicles", require("./routes/vehicles"));
+
 // Example protected endpoint: token echo
 app.get("/api/me", auth(), async (req, res) => {
   res.json({ me: req.user });

@@ -250,7 +250,7 @@ const CustomerManagement = () => {
                       className="view-btn"
                       title="View & edit"
                     >
-                      ✏️ Edit
+                      ✎ Edit
                     </button>
                   </td>
                 </tr>
@@ -312,7 +312,7 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
         email: formData.email,
         carPlateNo: formData.carPlate,
         status: formData.status,
-        walletBalance: parseFloat(formData.walletBalance) || 0,
+        // walletBalance: parseFloat(formData.walletBalance) || 0,
         role: formData.role,
       };
       await updateCustomer(customer.id, updatePayload);
@@ -462,7 +462,7 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
               </select>
             </div>
 
-            <div className="detail-group">
+            {/* <div className="detail-group">
               <label>Wallet Balance</label>
               <input
                 type="number"
@@ -477,10 +477,10 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
                 disabled={!editMode}
                 className="detail-input"
               />
-            </div>
+            </div> */}
 
             <div className="detail-group">
-              <label>Wallet Balance (Display)</label>
+              <label>Wallet Balance</label>
               <input
                 type="text"
                 value={formatCurrency(formData.walletBalance || 0)}
@@ -504,7 +504,7 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
               />
             </div>
 
-            <div className="detail-group full-width">
+            {/* <div className="detail-group full-width">
               <label>Notes</label>
               <textarea
                 value={formData.notes || ""}
@@ -514,7 +514,7 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
                 rows="3"
                 placeholder="Add any notes about this user..."
               />
-            </div>
+            </div> */}
           </div>
 
           <div className="customer-actions">

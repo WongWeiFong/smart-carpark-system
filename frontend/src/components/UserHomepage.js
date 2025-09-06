@@ -33,7 +33,7 @@ const UserHomepage = () => {
             <h3>Find Parking</h3>
             <p>Search for available parking spots near your location</p>
             <Link
-              to="/parking-slot"
+              to="/parking-slots"
               className="card-button"
               style={{
                 textDecoration: "none",
@@ -59,6 +59,23 @@ const UserHomepage = () => {
               }}
             >
               Manage Parking
+            </Link>
+          </div>
+
+          <div className="dashboard-card demo-card">
+            <div className="card-icon">📍</div>
+            <h3>Where I park ahh</h3>
+            <p>Now I can see where I parked my car again 🤔</p>
+            <Link
+              to="/vehicle-slots"
+              className="card-button demo-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              See see where is my car
             </Link>
           </div>
 
