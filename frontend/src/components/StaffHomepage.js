@@ -1,10 +1,52 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useParking } from "../contexts/ParkingContext";
 import "./Homepage.css";
 
 const StaffHomepage = () => {
   const { user, logout } = useAuth();
+  const { getAllParkingSlots } = useParking();
+  const [parkingStats, setParkingStats] = useState({
+    total: 0,
+    occupied: 0,
+    available: 0,
+    maintenance: 0,
+    loading: true,
+  });
+
+  useEffect(() => {
+    loadParkingStats();
+  }, []);
+
+  const loadParkingStats = async () => {
+    try {
+      setParkingStats((prev) => ({ ...prev, loading: true }));
+      const slots = await getAllParkingSlots();
+
+      // Use effectiveStatus first, then status, then sensorStatus
+      const getStatus = (slot) =>
+        (
+          slot.effectiveStatus ||
+          slot.status ||
+          slot.sensorStatus ||
+          ""
+        ).toLowerCase();
+
+      const stats = {
+        total: slots.length,
+        occupied: slots.filter((s) => getStatus(s) === "occupied").length,
+        available: slots.filter((s) => getStatus(s) === "available").length,
+        maintenance: slots.filter((s) => getStatus(s) === "maintenance").length,
+        loading: false,
+      };
+
+      setParkingStats(stats);
+    } catch (err) {
+      console.error("Error loading parking stats:", err);
+      setParkingStats((prev) => ({ ...prev, loading: false }));
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -17,7 +59,7 @@ const StaffHomepage = () => {
           <h1 className="homepage-title">Staff Dashboard</h1>
           <div className="user-info">
             <span className="welcome-text">
-              안녕하세요 {user?.role + " " + user?.staffName || "staff"}!
+              안녕하세요 {user?.role + " " + user?.staffName || "staff"}
             </span>
             <button onClick={handleLogout} className="logout-btn staff-logout">
               Logout
@@ -29,16 +71,28 @@ const StaffHomepage = () => {
       <main className="homepage-main">
         <div className="stats-section">
           <div className="stat-card">
-            <div className="stat-number">124</div>
+            <div className="stat-number">
+              {parkingStats.loading ? "..." : parkingStats.total}
+            </div>
             <div className="stat-label">Total Parking Slots</div>
           </div>
-          <div className="stat-card">
-            <div className="stat-number">89</div>
+          <div className="stat-card available">
+            <div className="stat-number">
+              {parkingStats.loading ? "..." : parkingStats.available}
+            </div>
+            <div className="stat-label">Available Spots</div>
+          </div>
+          <div className="stat-card occupied">
+            <div className="stat-number">
+              {parkingStats.loading ? "..." : parkingStats.occupied}
+            </div>
             <div className="stat-label">Occupied Spots</div>
           </div>
-          <div className="stat-card">
-            <div className="stat-number">35</div>
-            <div className="stat-label">Available Spots</div>
+          <div className="stat-card maintenance">
+            <div className="stat-number">
+              {parkingStats.loading ? "..." : parkingStats.maintenance}
+            </div>
+            <div className="stat-label">Maintenance</div>
           </div>
         </div>
 

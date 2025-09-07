@@ -140,7 +140,7 @@ const StaffVehicleSlotManagement = () => {
           </div>
           <div className="user-info">
             <span className="welcome-text">
-              Hello, {user?.staffName || "Staff"}
+              안녕하세요 {user?.role + " " + user?.staffName || "staff"}
             </span>
             <button onClick={logout} className="logout-btn">
               Logout

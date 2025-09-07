@@ -17,7 +17,8 @@ const UserHomepage = () => {
           <h1 className="homepage-title">Smart Carpark System</h1>
           <div className="user-info">
             <span className="welcome-text">
-              Welcome, {user?.firstName + " " + user?.lastName}!
+              Welcome, {user?.firstName + " " + user?.lastName}!, Wallet
+              Balance: RM{Number(user?.walletBalance ?? 0).toFixed(2)}
             </span>
             <button onClick={handleLogout} className="logout-btn">
               Logout
