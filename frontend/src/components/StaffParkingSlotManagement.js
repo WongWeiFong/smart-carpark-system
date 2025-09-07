@@ -20,7 +20,7 @@ const StaffParkingSlotManagement = () => {
   const [newStatus, setNewStatus] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showBulkActions, setShowBulkActions] = useState(true);
+  const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState(new Set());
 
   const toLowerStatus = (s) => (s || "").toLowerCase();

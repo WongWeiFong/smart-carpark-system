@@ -45,7 +45,7 @@ const UserHomepage = () => {
             </Link>
           </div>
 
-          <div className="dashboard-card demo-card">
+          {/* <div className="dashboard-card demo-card">
             <div className="card-icon">📍</div>
             <h3>Current Parking</h3>
             <p>View your car with parking slots and manage it</p>
@@ -60,7 +60,7 @@ const UserHomepage = () => {
             >
               Manage Parking
             </Link>
-          </div>
+          </div> */}
 
           <div className="dashboard-card demo-card">
             <div className="card-icon">📍</div>
@@ -96,23 +96,6 @@ const UserHomepage = () => {
             </Link>
           </div>
 
-          <div className="dashboard-card">
-            <div className="card-icon">💳</div>
-            <h3>Payment History</h3>
-            <p>View your parking payment history and receipts</p>
-            <Link
-              to="/payment-history"
-              className="card-button"
-              style={{
-                textDecoration: "none",
-                display: "block",
-                textAlign: "center",
-              }}
-            >
-              View History
-            </Link>
-          </div>
-
           {/* <div className="dashboard-card">
             <div className="card-icon">🎫</div>
             <h3>My Bookings</h3>
@@ -142,6 +125,42 @@ const UserHomepage = () => {
             <h3>Help & Support</h3>
             <p>Get help with parking issues or contact support</p>
             <button className="card-button">Get Help</button>
+          </div>
+
+          {/* <div className="dashboard-card cs-card">
+            <div className="card-icon">💳</div>
+            <h3>Payment History</h3>
+            <p>View your parking payment history and receipts</p>
+            <Link
+              to="/payment-history"
+              className="card-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              View History
+            </Link>
+          </div> */}
+
+          <div className="dashboard-card cs-card">
+            <div className="card-icon">📊</div>
+            <h3>Payment History</h3>
+            <p>View your parking payment history and receipts</p>
+            <button
+              className="card-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+                cursor: "not-allowed",
+                opacity: 0.5,
+              }}
+              disabled
+            >
+              View History
+            </button>
           </div>
         </div>
       </main>

@@ -267,6 +267,32 @@
   box-shadow: 0 12px 30px rgba(33, 150, 243, 0.2);
 }
 
+.cs-card {
+  background: linear-gradient(135deg, #f8ddff 0%, #dd9fff 100%);
+  border-left: 5px solid #ff0000;
+  position: relative;
+  overflow: hidden;
+}
+
+.cs-card::before {
+  content: "SOON";
+  position: absolute;
+  top: 10px;
+  right: -25px;
+  background: linear-gradient(45deg, #ff4081, #e91e63);
+  color: white;
+  padding: 5px 30px;
+  font-size: 11px;
+  font-weight: bold;
+  transform: rotate(45deg);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.cs-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(33, 150, 243, 0.2);
+}
+
 .demo-button {
   background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
   color: white;

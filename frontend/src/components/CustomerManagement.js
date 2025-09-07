@@ -116,13 +116,13 @@ const CustomerManagement = () => {
   const getSortIcon = (column) =>
     sortBy !== column ? "⇅" : sortOrder === "asc" ? "↑" : "↓";
 
-  if (loading) {
-    return (
-      <div className="customer-management loading-container">
-        <div className="loading-spinner">Loading customers...</div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="customer-management loading-container">
+  //       <div className="loading-spinner">Loading customers...</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="customer-management">
@@ -177,7 +177,7 @@ const CustomerManagement = () => {
               Users: {customers.filter((c) => c.role === "user").length}
             </span>
             <span className="stat">
-              Staff: {customers.filter((c) => c.role === "staff").length}
+              VIP: {customers.filter((c) => c.role === "vip").length}
             </span>
           </div>
         </div>
@@ -346,7 +346,7 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
           <div className="modal-actions">
             {!editMode ? (
               <button onClick={() => setEditMode(true)} className="edit-btn">
-                ✏️ Edit
+                ✎ Edit
               </button>
             ) : (
               <div className="edit-actions">
@@ -524,12 +524,12 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
             >
               🚗 View Vehicles ({customer.vehicles?.length || 0})
             </button> */}
-            <button
+            {/* <button
               onClick={() => setShowBalanceStatement(true)}
               className="action-btn balance-btn"
             >
               💰 View Balance Statement
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

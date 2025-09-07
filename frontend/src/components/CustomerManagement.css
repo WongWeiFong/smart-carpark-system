@@ -377,7 +377,7 @@
 }
 
 .modal-header {
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: linear-gradient(45deg, #ff9500, #ff6b00);
   color: white;
   padding: 1.5rem 2rem;
   display: flex;
@@ -415,11 +415,15 @@
   white-space: nowrap;
 }
 
-.edit-btn:hover,
 .save-btn:hover,
 .cancel-btn:hover,
 .close-btn:hover {
   background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.edit-btn:hover {
+  background: rgba(40, 167, 69, 1);
   transform: translateY(-1px);
 }
 
@@ -630,6 +634,7 @@
 }
 
 .balance-btn {
+  padding: 20px;
   background: linear-gradient(45deg, #ffc107, #fd7e14);
 }
 

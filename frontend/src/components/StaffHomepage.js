@@ -30,7 +30,7 @@ const StaffHomepage = () => {
         <div className="stats-section">
           <div className="stat-card">
             <div className="stat-number">124</div>
-            <div className="stat-label">Total Parking Spots</div>
+            <div className="stat-label">Total Parking Slots</div>
           </div>
           <div className="stat-card">
             <div className="stat-number">89</div>
@@ -39,10 +39,6 @@ const StaffHomepage = () => {
           <div className="stat-card">
             <div className="stat-number">35</div>
             <div className="stat-label">Available Spots</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">12</div>
-            <div className="stat-label">Reservations Today</div>
           </div>
         </div>
 
@@ -65,7 +61,7 @@ const StaffHomepage = () => {
           </div>
 
           <div className="dashboard-card staff-card demo-card">
-            <div className="card-icon">🎯</div>
+            <div className="card-icon">📍</div>
             <h3>Manage user's parking</h3>
             <p>View and manage customer's vehicle current parking slot</p>
             <Link
@@ -115,7 +111,7 @@ const StaffHomepage = () => {
             </Link>
           </div>
 
-          <div className="dashboard-card staff-card">
+          {/* <div className="dashboard-card staff-card cs-card">
             <div className="card-icon">📊</div>
             <h3>Analytics & Reports</h3>
             <p>View parking statistics and generate reports</p>
@@ -130,9 +126,28 @@ const StaffHomepage = () => {
             >
               View Reports
             </Link>
+          </div> */}
+
+          <div className="dashboard-card staff-card cs-card">
+            <div className="card-icon">📊</div>
+            <h3>Analytics & Reports</h3>
+            <p>View parking statistics and generate reports</p>
+            <button
+              className="card-button staff-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+                cursor: "not-allowed",
+                opacity: 0.5,
+              }}
+              disabled
+            >
+              View Reports
+            </button>
           </div>
 
-          <div className="dashboard-card staff-card">
+          {/* <div className="dashboard-card staff-card cs-card">
             <div className="card-icon">💰</div>
             <h3>Revenue Management</h3>
             <p>Track payments and revenue statistics</p>
@@ -147,9 +162,28 @@ const StaffHomepage = () => {
             >
               View Revenue
             </Link>
+          </div> */}
+
+          <div className="dashboard-card staff-card cs-card">
+            <div className="card-icon">📊</div>
+            <h3>Revenue Management</h3>
+            <p>Track payments and revenue statistics</p>
+            <button
+              className="card-button staff-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+                cursor: "not-allowed",
+                opacity: 0.5,
+              }}
+              disabled
+            >
+              View Revenue
+            </button>
           </div>
 
-          <div className="dashboard-card staff-card">
+          {/* <div className="dashboard-card staff-card cs-card">
             <div className="card-icon">🔧</div>
             <h3>System Settings</h3>
             <p>Configure parking rates and system settings</p>
@@ -164,9 +198,28 @@ const StaffHomepage = () => {
             >
               Settings
             </Link>
+          </div> */}
+
+          <div className="dashboard-card staff-card cs-card">
+            <div className="card-icon">📊</div>
+            <h3>System Settings</h3>
+            <p>Configure parking rates and system settings</p>
+            <button
+              className="card-button staff-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+                cursor: "not-allowed",
+                opacity: 0.5,
+              }}
+              disabled
+            >
+              Settings
+            </button>
           </div>
 
-          <div className="dashboard-card staff-card">
+          {/* <div className="dashboard-card staff-card cs-card">
             <div className="card-icon">🚨</div>
             <h3>Emergency Management</h3>
             <p>Handle emergency situations and incidents</p>
@@ -181,6 +234,25 @@ const StaffHomepage = () => {
             >
               Emergency
             </Link>
+          </div> */}
+
+          <div className="dashboard-card staff-card cs-card">
+            <div className="card-icon">📊</div>
+            <h3>Emergency Management</h3>
+            <p>Handle emergency situations and incidents</p>
+            <button
+              className="card-button staff-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+                cursor: "not-allowed",
+                opacity: 0.5,
+              }}
+              disabled
+            >
+              Emergency
+            </button>
           </div>
         </div>
       </main>
