@@ -31,8 +31,8 @@ const UserHomepage = () => {
         <div className="dashboard-grid">
           <div className="dashboard-card">
             <div className="card-icon">🅿️</div>
-            <h3>Find Parking</h3>
-            <p>Search for available parking spots near your location</p>
+            <h3>Where got parking ahh</h3>
+            <p>I can find empty slot easily now yayyy</p>
             <Link
               to="/parking-slots"
               className="card-button"
@@ -42,7 +42,7 @@ const UserHomepage = () => {
                 textAlign: "center",
               }}
             >
-              Search Now
+              Where got empty slot
             </Link>
           </div>
 
@@ -82,8 +82,8 @@ const UserHomepage = () => {
 
           <div className="dashboard-card">
             <div className="card-icon">🚗</div>
-            <h3>My Car</h3>
-            <p>Add your car plate number for auto deduction</p>
+            <h3>My Car & Wallet</h3>
+            <p>Add car plate number for auto deduction & view wallet balance</p>
             <Link
               to="/cars"
               className="card-button"
@@ -93,7 +93,7 @@ const UserHomepage = () => {
                 textAlign: "center",
               }}
             >
-              View Car
+              View
             </Link>
           </div>
 
@@ -107,7 +107,7 @@ const UserHomepage = () => {
           <div className="dashboard-card">
             <div className="card-icon">⚙️</div>
             <h3>Settings</h3>
-            <p>Manage your account settings and preferences</p>
+            <p>Let me change my account details yaa</p>
             <Link
               to="/user-settings"
               className="card-button"
@@ -124,8 +124,18 @@ const UserHomepage = () => {
           <div className="dashboard-card">
             <div className="card-icon">🆘</div>
             <h3>Help & Support</h3>
-            <p>Get help with parking issues or contact support</p>
-            <button className="card-button">Get Help</button>
+            <p>I can ask for help from here</p>
+            <Link
+              to="/help"
+              className="card-button"
+              style={{
+                textDecoration: "none",
+                display: "block",
+                textAlign: "center",
+              }}
+            >
+              Get Help
+            </Link>{" "}
           </div>
 
           {/* <div className="dashboard-card cs-card">

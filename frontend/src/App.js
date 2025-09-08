@@ -29,6 +29,7 @@ import CustomerManagement from "./components/CustomerManagement";
 import AnalyticsReports from "./components/AnalyticsReports";
 import SystemSettings from "./components/SystemSettings";
 import UserSettings from "./components/UserSettings";
+import HelpSupport from "./components/HelpSupport";
 import StaffSettings from "./components/StaffSettings";
 import EmergencyManagement from "./components/EmergencyManagement";
 import "./App.css";
@@ -249,6 +250,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <UserSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/help"
+          element={
+            <ProtectedRoute>
+              <HelpSupport />
             </ProtectedRoute>
           }
         />
