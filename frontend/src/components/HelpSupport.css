@@ -1,0 +1,97 @@
+.help-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 30px;
+}
+
+.help-wrapper {
+    max-width: 960px;
+    border-radius: 16px;
+    margin: auto;
+    padding: 40px;
+    background: #f9f9f9;
+    min-height: calc(100vh - 80px);
+}
+
+.help-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+}
+
+.help-title h1 {
+    font-size: 2.5rem;
+    margin-bottom: 4px;
+}
+
+.help-subtitle {
+    color: #666;
+    font-size: 1rem;
+}
+
+.help-back-btn {
+    font-size: 0.9rem;
+    color: #007bff;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.help-back-btn:hover {
+    border-color: #007bff;
+}
+
+.help-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.support-card {
+    flex: 1 1 45%;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.support-icon {
+    font-size: 2rem;
+    color: #007bff;
+}
+
+.support-details h2 {
+    margin: 0 0 8px;
+    font-size: 1.2rem;
+}
+
+.support-details p {
+    margin-bottom: 16px;
+    color: #555;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.contact-icon {
+    margin-right: 8px;
+    color: #555;
+}
+
+.contact-item a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.contact-item a:hover {
+    text-decoration: underline;
+}
