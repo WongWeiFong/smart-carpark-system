@@ -8,6 +8,7 @@ const {
   PutCommand,
   GetCommand,
   ScanCommand,
+  UpdateCommand,
   DeleteCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
@@ -602,6 +603,68 @@ router.put("/staff-profile", async (req, res) => {
   } catch (error) {
     console.error("Update staff profile error:", error);
     res.status(500).json({ error: "Failed to update staff profile" });
+  }
+});
+
+router.post("/wallet/reload", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.sub;
+
+    const amount = Number(req.body?.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({ error: "Invalid amount" });
+    }
+
+    // 1) Read current balance
+    const getRes = await ddb.send(
+      new GetCommand({
+        TableName: USERS_TABLE,
+        Key: { userID: userId },
+        ProjectionExpression: "walletBalance, userID",
+      })
+    );
+    if (!getRes.Item) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // 2) Coerce to number regardless of existing type
+    const currentRaw = getRes.Item.walletBalance;
+    const current =
+      typeof currentRaw === "number" ? currentRaw : Number(currentRaw) || 0;
+
+    const newBalance = current + amount;
+
+    // 3) Write the numeric value back (forces attribute to be a Number)
+    const updRes = await ddb.send(
+      new UpdateCommand({
+        TableName: USERS_TABLE,
+        Key: { userID: userId },
+        UpdateExpression: "SET walletBalance = :newBal, walletUpdatedAt = :ts",
+        ExpressionAttributeValues: {
+          ":newBal": newBalance,
+          ":ts": new Date().toISOString(),
+        },
+        ReturnValues: "UPDATED_NEW",
+      })
+    );
+
+    return res.json({
+      ok: true,
+      walletBalance: Number(updRes.Attributes?.walletBalance ?? newBalance),
+    });
+  } catch (err) {
+    console.error("Wallet reload error:", {
+      name: err?.name,
+      message: err?.message,
+      stack: err?.stack,
+    });
+    return res.status(500).json({ error: "Failed to reload wallet" });
   }
 });
 

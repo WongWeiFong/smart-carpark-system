@@ -236,14 +236,14 @@ const CarDetails = () => {
 
               {/* Balance and Parking Info Section */}
               <div className="detail-section">
-                <h3>Account & Parking Info</h3>
+                <h3>Parking Info</h3>
                 <div className="detail-grid">
-                  <div className="detail-item">
+                  {/* <div className="detail-item">
                     <span className="detail-label">Balance Spent:</span>
                     <span className="detail-value balance-display">
-                      ${balance.toFixed(2)}
+                      RM{balance.toFixed(2)}
                     </span>
-                  </div>
+                  </div> */}
                   <div className="detail-item">
                     <span className="detail-label">Current Parking Slot:</span>
                     <span className="detail-value">
