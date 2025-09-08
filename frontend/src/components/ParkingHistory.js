@@ -14,7 +14,7 @@ const ParkingHistory = () => {
   const [balanceAmount, setBalanceAmount] = useState("");
 
   const car = getCarById(carId);
-  const parkingHistory = getParkingHistory(car?.plateNumber);
+  const parkingHistory = getParkingHistory(car?.carPlateNo);
   const balance = getBalance();
 
   if (!car) {
@@ -93,7 +93,7 @@ const ParkingHistory = () => {
                 <h3>
                   {car.make} {car.model}
                 </h3>
-                <p className="plate-number">{car.plateNumber}</p>
+                <p className="plate-number">{car.carPlateNo}</p>
               </div>
             </div>
           </div>

@@ -114,9 +114,11 @@ router.post("/signup", async (req, res) => {
       firstName: firstName || null,
       lastName: lastName || null,
       carPlateNo: carPlateNo || null,
-      password: hashedPassword, // Using 'password' as per your schema
-      walletBalance: 0, // Initialize wallet balance
-      role: "user", // Add role field to DynamoDB schema
+      password: hashedPassword,
+      walletBalance: 0,
+      createdAt: new Date().toISOString(),
+      status: "active",
+      role: "user",
     };
     console.log("8a. User item to create:", {
       ...userItem,

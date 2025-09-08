@@ -1,3 +1,4 @@
+// AddCar.js
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -14,8 +15,8 @@ const AddCar = () => {
     model: "",
     year: "",
     color: "",
-    plateNumber: "",
-    type: "sedan",
+    carPlateNo: "",
+    type: "",
     description: "",
   });
 
@@ -23,17 +24,18 @@ const AddCar = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
 
-    // Clear error when user starts typing
+    // Always keep plate uppercase for consistency
+    const nextValue =
+      name === "carPlateNo" ? value.toUpperCase().trimStart() : value;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: nextValue,
+    }));
+
     if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: "",
-      });
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -42,21 +44,19 @@ const AddCar = () => {
 
     if (!formData.make.trim()) newErrors.make = "Make is required";
     if (!formData.model.trim()) newErrors.model = "Model is required";
-    if (!formData.year.trim()) newErrors.year = "Year is required";
+    if (!formData.year.toString().trim()) newErrors.year = "Year is required";
     if (!formData.color.trim()) newErrors.color = "Color is required";
-    if (!formData.plateNumber.trim())
-      newErrors.plateNumber = "Plate number is required";
+    if (!formData.carPlateNo.trim())
+      newErrors.carPlateNo = "Car plate number is required";
 
     const currentYear = new Date().getFullYear();
-    if (
-      formData.year &&
-      (formData.year < 1900 || formData.year > currentYear + 1)
-    ) {
+    const yearNum = Number(formData.year);
+    if (yearNum && (yearNum < 1900 || yearNum > currentYear + 1)) {
       newErrors.year = `Year must be between 1900 and ${currentYear + 1}`;
     }
 
-    if (formData.plateNumber && formData.plateNumber.length < 2) {
-      newErrors.plateNumber = "Plate number must be at least 2 characters";
+    if (formData.carPlateNo && formData.carPlateNo.length < 2) {
+      newErrors.carPlateNo = "Car plate number must be at least 2 characters";
     }
 
     setErrors(newErrors);
@@ -65,23 +65,35 @@ const AddCar = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
 
-    if (!validateForm()) {
-      return;
-    }
+    // Build the item exactly how the backend/DynamoDB expects it
+    const payload = {
+      carPlateNo: formData.carPlateNo.toUpperCase().trim(), // PK in DynamoDB
+      userID: user?.userID || user?.id, // use whichever your AuthContext exposes
+      registeredAt: new Date().toISOString(),
+      make: formData.make.trim(),
+      model: formData.model.trim(),
+      year: Number(formData.year),
+      color: formData.color.trim(),
+      type: formData.type,
+      description: formData.description?.trim() || "",
+    };
 
     try {
-      await addCar(formData);
+      await addCar(payload);
       alert("Car added successfully!");
       navigate("/cars");
     } catch (error) {
-      alert("Failed to add car. Please try again.");
+      console.error(error);
+      alert(
+        error?.response?.data?.error ||
+          "Failed to add car. Please try again or use a different car plate."
+      );
     }
   };
 
-  const handleLogout = () => {
-    logout();
-  };
+  const handleLogout = () => logout();
 
   return (
     <div className="car-management-container">
@@ -114,6 +126,7 @@ const AddCar = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="add-car-form">
+              {/* Make / Model */}
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="make">Make *</label>
@@ -148,6 +161,7 @@ const AddCar = () => {
                 </div>
               </div>
 
+              {/* Year / Color */}
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="year">Year *</label>
@@ -184,23 +198,22 @@ const AddCar = () => {
                 </div>
               </div>
 
+              {/* Plate / Type */}
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="plateNumber">Plate Number *</label>
+                  <label htmlFor="carPlateNo">Car Plate Number *</label>
                   <input
                     type="text"
-                    id="plateNumber"
-                    name="plateNumber"
-                    value={formData.plateNumber}
+                    id="carPlateNo"
+                    name="carPlateNo"
+                    value={formData.carPlateNo}
                     onChange={handleInputChange}
-                    className={`form-input ${
-                      errors.plateNumber ? "error" : ""
-                    }`}
+                    className={`form-input ${errors.carPlateNo ? "error" : ""}`}
                     placeholder="e.g., ABC123"
                     style={{ textTransform: "uppercase" }}
                   />
-                  {errors.plateNumber && (
-                    <span className="error-text">{errors.plateNumber}</span>
+                  {errors.carPlateNo && (
+                    <span className="error-text">{errors.carPlateNo}</span>
                   )}
                 </div>
 
@@ -224,6 +237,7 @@ const AddCar = () => {
                 </div>
               </div>
 
+              {/* Description */}
               <div className="form-group">
                 <label htmlFor="description">Description (Optional)</label>
                 <textarea
@@ -237,6 +251,7 @@ const AddCar = () => {
                 />
               </div>
 
+              {/* Actions */}
               <div className="form-actions">
                 <button
                   type="submit"

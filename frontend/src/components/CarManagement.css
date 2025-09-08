@@ -136,8 +136,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {
@@ -453,12 +458,14 @@
   justify-content: center;
 }
 
-.edit-actions, .view-actions {
+.edit-actions,
+.view-actions {
   display: flex;
   gap: 15px;
 }
 
-.edit-button, .save-button {
+.edit-button,
+.save-button {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -469,7 +476,8 @@
   transition: all 0.3s ease;
 }
 
-.edit-button:hover, .save-button:hover {
+.edit-button:hover,
+.save-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
 }
@@ -490,7 +498,8 @@
   transform: translateY(-2px);
 }
 
-.save-button:disabled, .cancel-button:disabled {
+.save-button:disabled,
+.cancel-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
@@ -690,7 +699,8 @@
     flex-direction: column;
   }
 
-  .edit-actions, .view-actions {
+  .edit-actions,
+  .view-actions {
     flex-direction: column;
     width: 100%;
   }
@@ -730,4 +740,43 @@
   .car-details-actions {
     padding: 20px;
   }
-} 
+
+  /* Center the single car card vertically & horizontally */
+  .single-car-mode {
+    min-height: calc(100vh - 140px);
+    /* header height estimate */
+    display: grid;
+    place-items: center;
+    padding: 24px;
+  }
+
+  .single-car-wrapper {
+    width: 100%;
+    max-width: 720px;
+    /* feels “full” but not too wide */
+  }
+
+  .car-card-single {
+    margin: 0 auto;
+    width: 100%;
+    min-height: 60vh;
+    /* gives a full, balanced look */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Bigger plate styling for single-view */
+  .large-plate .plate-number {
+    display: inline-block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  /* Tighten empty state spacing a bit */
+  .empty-state h3 {
+    margin-top: 8px;
+  }
+
+}

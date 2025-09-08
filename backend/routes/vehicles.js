@@ -6,6 +6,8 @@ const {
   GetCommand,
   PutCommand,
   QueryCommand,
+  UpdateCommand,
+  DeleteCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
 const router = express.Router();
@@ -52,8 +54,15 @@ router.get("/by-user/:userID", async (req, res) => {
           userID,
           vehicle: {
             carPlateNo: it.carPlateNo ?? null,
+            color: it.color || "",
+            make: it.make || "",
+            model: it.model || "",
+            year: it.year || null,
+            type: it.type || "",
             parkingSection: it.parkingSection ?? null,
             parkingSlot: it.parkingSlot ?? null,
+            description: it.description || "",
+            registeredAt: it.registeredAt || "",
           },
           source: "GSI",
         });
@@ -115,33 +124,236 @@ router.put("/by-user/:userID/parking", async (req, res) => {
   }
 
   try {
-    // Need plate unless you’ve decided to store by GSI only
-    const u = await ddb.send(
+    // Look up the user to get their carPlateNo
+    const userResult = await ddb.send(
       new GetCommand({ TableName: USERS_TABLE, Key: { userID } })
     );
-    if (!u.Item) return res.status(404).json({ error: "User not found" });
+    if (!userResult.Item)
+      return res.status(404).json({ error: "User not found" });
 
-    const carPlateNo = u.Item.carPlateNo || null;
-    if (!carPlateNo)
+    const carPlateNo = userResult.Item.carPlateNo;
+    if (!carPlateNo) {
       return res.status(400).json({ error: "User has no carPlateNo" });
+    }
 
-    await ddb.send(
-      new PutCommand({
-        TableName: VEHICLE_TABLE,
-        Item: {
-          carPlateNo, // PK on Vehicle
-          userID, // keep for GSI + traceability
-          parkingSection, // e.g. "E"
-          parkingSlot, // e.g. 12
-          updatedAt: new Date().toISOString().slice(0, 19), // "YYYY-MM-DDTHH:MM:SS"
-        },
-      })
-    );
+    // Use UpdateCommand so you don't overwrite other attributes on the vehicle
+    const updateParams = {
+      TableName: VEHICLE_TABLE,
+      Key: { carPlateNo }, // the PK of the vehicle item
+      UpdateExpression:
+        "SET #section = :section, #slot = :slot, updatedAt = :updatedAt",
+      ExpressionAttributeNames: {
+        "#section": "parkingSection",
+        "#slot": "parkingSlot",
+      },
+      ExpressionAttributeValues: {
+        ":section": parkingSection,
+        ":slot": parkingSlot,
+        ":updatedAt": new Date().toISOString().slice(0, 19),
+      },
+      ConditionExpression: "attribute_exists(carPlateNo)", // ensure the record exists
+      ReturnValues: "ALL_NEW",
+    };
+    const result = await ddb.send(new UpdateCommand(updateParams));
 
-    res.json({ ok: true, carPlateNo, parkingSection, parkingSlot });
+    res.json({
+      ok: true,
+      carPlateNo,
+      parkingSection: result.Attributes.parkingSection,
+      parkingSlot: result.Attributes.parkingSlot,
+    });
   } catch (err) {
     console.error("[vehicles] update error:", err);
     res.status(500).json({ error: "Failed to update parking location" });
+  }
+});
+
+// POST /api/vehicles
+router.post("/", async (req, res) => {
+  try {
+    const {
+      carPlateNo, // PK
+      userID,
+      registeredAt,
+      make,
+      model,
+      year,
+      color,
+      type,
+      description,
+    } = req.body || {};
+
+    if (!carPlateNo || !userID || !registeredAt) {
+      return res
+        .status(400)
+        .json({ error: "carPlateNo, userID and registeredAt are required." });
+    }
+
+    const item = {
+      carPlateNo: carPlateNo.toUpperCase().trim(), // PK
+      userID,
+      registeredAt,
+      make: make || "",
+      model: model || "",
+      year: year ? Number(year) : undefined,
+      color: color || "",
+      type: type || "",
+      description: description || "",
+    };
+
+    // Remove undefined attributes so Dynamo only stores present ones
+    Object.keys(item).forEach((k) => item[k] === undefined && delete item[k]);
+
+    // Prevent creating duplicate plate
+    const command = new PutCommand({
+      TableName: VEHICLE_TABLE,
+      Item: item,
+      ConditionExpression: "attribute_not_exists(carPlateNo)",
+    });
+
+    await ddb.send(command);
+    res.status(201).json({ message: "Vehicle added.", item });
+
+    await ddb.send(
+      new UpdateCommand({
+        TableName: USERS_TABLE,
+        Key: { userID },
+        UpdateExpression: "SET carPlateNo = :carPlateNo",
+        ExpressionAttributeValues: {
+          ":carPlateNo": carPlateNo.toUpperCase().trim(),
+        },
+      })
+    );
+  } catch (err) {
+    if (err.name === "ConditionalCheckFailedException") {
+      return res.status(409).json({
+        error: "This car plate already exists. Use a different one.",
+      });
+    }
+    console.error("Add vehicle error:", err);
+    res.status(500).json({ error: "Failed to add vehicle." });
+  }
+});
+
+// UPDATE car details
+router.put("/:carPlateNo", async (req, res) => {
+  const plate = req.params.carPlateNo.toUpperCase().trim();
+  const updates = req.body || {};
+
+  // Build a dynamic update expression for only provided fields
+  const expressions = [];
+  const names = {};
+  const values = {};
+
+  if (updates.make !== undefined) {
+    expressions.push("#make = :make");
+    names["#make"] = "make";
+    values[":make"] = updates.make;
+  }
+  if (updates.model !== undefined) {
+    expressions.push("#model = :model");
+    names["#model"] = "model";
+    values[":model"] = updates.model;
+  }
+  if (updates.year !== undefined) {
+    expressions.push("#year = :year");
+    names["#year"] = "year";
+    values[":year"] = Number(updates.year);
+  }
+  if (updates.color !== undefined) {
+    expressions.push("#color = :color");
+    names["#color"] = "color";
+    values[":color"] = updates.color;
+  }
+  if (updates.type !== undefined) {
+    expressions.push("#tp = :tp");
+    names["#tp"] = "type";
+    values[":tp"] = updates.type;
+  }
+  if (updates.description !== undefined) {
+    expressions.push("#description = :description");
+    names["#description"] = "description";
+    values[":description"] = updates.description;
+  }
+
+  if (expressions.length === 0) {
+    return res.status(400).json({ error: "No valid fields to update" });
+  }
+
+  // Always update `updatedAt`, but do NOT touch parkingSection/parkingSlot
+  expressions.push("updatedAt = :updatedAt");
+  values[":updatedAt"] = new Date().toISOString().slice(0, 19);
+
+  const updateParams = {
+    TableName: VEHICLE_TABLE,
+    Key: { carPlateNo: plate },
+    UpdateExpression: "SET " + expressions.join(", "),
+    ExpressionAttributeNames: names,
+    ExpressionAttributeValues: values,
+    ConditionExpression: "attribute_exists(carPlateNo)",
+    ReturnValues: "ALL_NEW",
+  };
+
+  try {
+    const result = await ddb.send(new UpdateCommand(updateParams));
+    res.json({ message: "Car updated", item: result.Attributes });
+  } catch (err) {
+    if (err.name === "ConditionalCheckFailedException") {
+      return res.status(404).json({ error: "Car not found" });
+    }
+    console.error("Update error:", err);
+    res.status(500).json({ error: "Failed to update car" });
+  }
+});
+
+router.delete("/:carPlateNo", async (req, res) => {
+  try {
+    const plate = (req.params.carPlateNo || "").toUpperCase().trim();
+
+    // 1. Look up the vehicle to find which user owns it
+    const getCarCmd = new GetCommand({
+      TableName: VEHICLE_TABLE,
+      Key: { carPlateNo: plate },
+    });
+    const carResult = await ddb.send(getCarCmd);
+    const car = carResult?.Item;
+    if (!car) {
+      return res.status(404).json({ error: "Vehicle not found" });
+    }
+
+    const { userID } = car;
+    if (!userID) {
+      // If for some reason userID isn’t on the car record, just delete the car
+      await ddb.send(
+        new DeleteCommand({
+          TableName: VEHICLE_TABLE,
+          Key: { carPlateNo: plate },
+        })
+      );
+      return res.status(204).end();
+    }
+
+    // 2. Remove the carPlateNo attribute from the user
+    await ddb.send(
+      new UpdateCommand({
+        TableName: USERS_TABLE,
+        Key: { userID },
+        UpdateExpression: "REMOVE carPlateNo",
+      })
+    );
+
+    // 3. Delete the vehicle record
+    await ddb.send(
+      new DeleteCommand({
+        TableName: VEHICLE_TABLE,
+        Key: { carPlateNo: plate },
+      })
+    );
+
+    return res.status(204).end();
+  } catch (err) {
+    console.error("Delete vehicle error:", err);
+    res.status(500).json({ error: "Failed to delete vehicle" });
   }
 });
 

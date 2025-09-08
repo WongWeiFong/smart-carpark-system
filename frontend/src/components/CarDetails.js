@@ -9,14 +9,13 @@ const CarDetails = () => {
   const { carId } = useParams();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { getCarById, updateCar, deleteCar, loading } = useCars();
-  const { getBalance, getParkingSlot } = useParking();
+  const { getCarById, updateCar, loading } = useCars();
+  const { getBalance } = useParking();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
 
   const car = getCarById(carId);
   const balance = getBalance();
-  const parkingSlot = getParkingSlot(carId);
 
   if (!car) {
     return (
@@ -39,15 +38,23 @@ const CarDetails = () => {
       model: car.model,
       year: car.year,
       color: car.color,
-      plateNumber: car.plateNumber,
+      carPlateNo: car.carPlateNo,
       type: car.type,
       description: car.description || "",
     });
   };
 
   const handleSave = async () => {
+    const updates = {
+      make: editData.make,
+      model: editData.model,
+      year: editData.year,
+      color: editData.color,
+      type: editData.type,
+      description: editData.description,
+    };
     try {
-      await updateCar(carId, editData);
+      await updateCar(carId, updates);
       setIsEditing(false);
       alert("Car updated successfully!");
     } catch (error) {
@@ -60,21 +67,21 @@ const CarDetails = () => {
     setEditData({});
   };
 
-  const handleDelete = async () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete this car? This action cannot be undone."
-      )
-    ) {
-      try {
-        await deleteCar(carId);
-        alert("Car deleted successfully!");
-        navigate("/cars");
-      } catch (error) {
-        alert("Failed to delete car. Please try again.");
-      }
-    }
-  };
+  // const handleDelete = async () => {
+  //   if (
+  //     window.confirm(
+  //       "Are you sure you want to delete this car? This action cannot be undone."
+  //     )
+  //   ) {
+  //     try {
+  //       await deleteCar(carId);
+  //       alert("Car deleted successfully!");
+  //       navigate("/cars");
+  //     } catch (error) {
+  //       alert("Failed to delete car. Please try again.");
+  //     }
+  //   }
+  // };
 
   const handleInputChange = (e) => {
     setEditData({
@@ -157,20 +164,8 @@ const CarDetails = () => {
                 <h3>Vehicle Information</h3>
                 <div className="detail-grid">
                   <div className="detail-item">
-                    <span className="detail-label">Plate Number:</span>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        name="plateNumber"
-                        value={editData.plateNumber}
-                        onChange={handleInputChange}
-                        className="edit-input"
-                      />
-                    ) : (
-                      <span className="detail-value plate-display">
-                        {car.plateNumber}
-                      </span>
-                    )}
+                    <span className="detail-label">Car Plate Number:</span>
+                    <span className="detail-value">{car.carPlateNo}</span>
                   </div>
 
                   <div className="detail-item">
@@ -213,7 +208,7 @@ const CarDetails = () => {
                   <div className="detail-item">
                     <span className="detail-label">Registered:</span>
                     <span className="detail-value">
-                      {new Date(car.createdAt).toLocaleDateString()}
+                      {new Date(car.registeredAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -252,7 +247,9 @@ const CarDetails = () => {
                   <div className="detail-item">
                     <span className="detail-label">Current Parking Slot:</span>
                     <span className="detail-value">
-                      {parkingSlot ? parkingSlot.slotNumber : "Not assigned"}
+                      {car.parkingSection && car.parkingSlot
+                        ? `${car.parkingSection}-${car.parkingSlot}`
+                        : "Not assigned"}
                     </span>
                   </div>
                 </div>
@@ -262,7 +259,7 @@ const CarDetails = () => {
               <div className="detail-section">
                 <h3>Quick Actions</h3>
                 <div className="quick-actions-grid">
-                  <Link
+                  {/* <Link
                     to={`/cars/${carId}/history`}
                     className="quick-action-button history-button"
                   >
@@ -273,11 +270,11 @@ const CarDetails = () => {
                         Entry/exit logs & balance
                       </span>
                     </div>
-                  </Link>
+                  </Link> */}
 
                   <Link
                     // to={`/cars/${ca`}
-                    to={`/parking`}
+                    to={`/vehicle-slots`}
                     className="quick-action-button slot-button"
                   >
                     <span className="action-icon">🅿️</span>
@@ -326,13 +323,13 @@ const CarDetails = () => {
                   <button onClick={handleEdit} className="edit-button">
                     Edit Details
                   </button>
-                  <button
+                  {/* <button
                     onClick={handleDelete}
                     className="delete-button"
                     disabled={loading}
                   >
                     Delete Car
-                  </button>
+                  </button> */}
                 </div>
               )}
             </div>
