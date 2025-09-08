@@ -16,7 +16,7 @@ const AddCar = () => {
     year: "",
     color: "",
     carPlateNo: "",
-    type: "sedan",
+    type: "",
     description: "",
   });
 

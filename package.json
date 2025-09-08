@@ -7,7 +7,6 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "konva": "^9.3.22",
-    "react-icons": "^5.5.0",
     "react-konva": "^19.0.7"
   },
   "name": "smart-carpark-system",
