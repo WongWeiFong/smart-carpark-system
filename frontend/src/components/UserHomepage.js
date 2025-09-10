@@ -155,7 +155,7 @@ const UserHomepage = () => {
             </Link>
           </div> */}
 
-          <div className="dashboard-card cs-card">
+          {/* <div className="dashboard-card cs-card">
             <div className="card-icon">📊</div>
             <h3>Payment History</h3>
             <p>View your parking payment history and receipts</p>
@@ -172,7 +172,7 @@ const UserHomepage = () => {
             >
               View History
             </button>
-          </div>
+          </div> */}
         </div>
       </main>
     </div>

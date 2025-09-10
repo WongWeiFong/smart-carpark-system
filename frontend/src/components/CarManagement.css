@@ -120,6 +120,11 @@
   gap: 15px;
 }
 
+.customer-wallet-balance {
+  font-weight: 700;
+  margin: 0 0 5px 0;
+}
+
 .reload-wallet-btn {
   background: rgba(255, 255, 255, 0.2);
   color: white;

@@ -182,7 +182,7 @@ const StaffHomepage = () => {
             </Link>
           </div> */}
 
-          <div className="dashboard-card staff-card cs-card">
+          {/* <div className="dashboard-card staff-card cs-card">
             <div className="card-icon">📊</div>
             <h3>Analytics & Reports</h3>
             <p>View parking statistics and generate reports</p>
@@ -199,7 +199,7 @@ const StaffHomepage = () => {
             >
               View Reports
             </button>
-          </div>
+          </div> */}
 
           {/* <div className="dashboard-card staff-card cs-card">
             <div className="card-icon">💰</div>
@@ -218,7 +218,7 @@ const StaffHomepage = () => {
             </Link>
           </div> */}
 
-          <div className="dashboard-card staff-card cs-card">
+          {/* <div className="dashboard-card staff-card cs-card">
             <div className="card-icon">📊</div>
             <h3>Revenue Management</h3>
             <p>Track payments and revenue statistics</p>
@@ -235,7 +235,7 @@ const StaffHomepage = () => {
             >
               View Revenue
             </button>
-          </div>
+          </div> */}
 
           {/* <div className="dashboard-card staff-card cs-card">
             <div className="card-icon">🔧</div>
@@ -254,7 +254,7 @@ const StaffHomepage = () => {
             </Link>
           </div> */}
 
-          <div className="dashboard-card staff-card cs-card">
+          {/* <div className="dashboard-card staff-card cs-card">
             <div className="card-icon">📊</div>
             <h3>System Settings</h3>
             <p>Configure parking rates and system settings</p>
@@ -271,7 +271,7 @@ const StaffHomepage = () => {
             >
               Settings
             </button>
-          </div>
+          </div> */}
 
           {/* <div className="dashboard-card staff-card cs-card">
             <div className="card-icon">🚨</div>
@@ -290,7 +290,7 @@ const StaffHomepage = () => {
             </Link>
           </div> */}
 
-          <div className="dashboard-card staff-card cs-card">
+          {/* <div className="dashboard-card staff-card cs-card">
             <div className="card-icon">📊</div>
             <h3>Emergency Management</h3>
             <p>Handle emergency situations and incidents</p>
@@ -307,7 +307,7 @@ const StaffHomepage = () => {
             >
               Emergency
             </button>
-          </div>
+          </div> */}
         </div>
       </main>
     </div>

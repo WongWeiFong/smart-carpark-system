@@ -96,7 +96,7 @@ const CustomerManagement = () => {
   const formatCurrency = (amount) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "MYR",
     }).format(amount || 0);
 
   const getStatusBadge = (status) => {
@@ -235,7 +235,7 @@ const CustomerManagement = () => {
                     {getStatusBadge(customer.status)}
                   </td>
                   <td
-                    className={`wallet-balance ${
+                    className={`customer-wallet-balance ${
                       customer.walletBalance < 0 ? "negative" : "positive"
                     }`}
                   >
