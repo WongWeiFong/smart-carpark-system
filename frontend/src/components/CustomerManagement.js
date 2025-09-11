@@ -335,7 +335,7 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
   const formatCurrency = (amount) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "MYR",
     }).format(amount || 0);
 
   return (
@@ -418,9 +418,9 @@ const CustomerDetailModal = ({ customer, onClose, onUpdate }) => {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                disabled={!editMode}
+                disabled
                 className="detail-input"
+                style={{ fontStyle: "italic", color: "#666" }}
               />
             </div>
 

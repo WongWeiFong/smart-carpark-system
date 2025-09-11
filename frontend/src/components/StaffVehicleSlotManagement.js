@@ -226,6 +226,32 @@ const StaffVehicleSlotManagement = () => {
         {/* Konva layout */}
         <div className="enhanced-layout-section">
           <h3>Tap a slot to select</h3>
+          {/* Legend */}
+          <div className="parking-layout-canvas">
+            <div className="canvas-legend">
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: "#28a745" }}
+                ></div>
+                <span>Available</span>
+              </div>
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: "#cfc61f" }}
+                ></div>
+                <span>Current</span>
+              </div>
+              <div className="legend-item">
+                <div
+                  className="legend-color"
+                  style={{ backgroundColor: "#667eea" }}
+                ></div>
+                <span>Selected</span>
+              </div>
+            </div>
+          </div>
           <KonvaErrorBoundary>
             <ParkingLayoutCanvas
               slots={[]} // empty => all green
